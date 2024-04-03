@@ -11,8 +11,22 @@ app.get('/', (req, res) => {
     res.send('hello express');
 });
 
-const PORT = 3000;
+app.get('/api', (req, res) => {
+    res.send('backend server');
+});
 
-app.listen(PORT, () => {
-    console.log(`server listen ${PORT}`);
+// const PORT = 3000;
+
+// app.listen(PORT, () => {
+//     console.log(`server listen ${PORT}`);
+// })  
+const MONGO_URI = config.mongoDBUri;
+mongoose.connect(MONGO_URI)
+
+const db = mongoose.connection
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', () => {
+  console.log('📍 Connected to MongoDB')
 })
+
+module.exports = app;
