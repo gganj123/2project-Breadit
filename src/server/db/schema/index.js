@@ -4,7 +4,8 @@ const magazinePostSchema = require("./magazinePost");
 const postSchema = require("./post");
 const recipeSchema = require("./recipe");
 const reviewSchema = require("./review");
-const userSchema = require("./user");
+
+const user = require("./user");
 
 
 module.exports = {
@@ -14,5 +15,6 @@ module.exports = {
   postSchema,
   recipeSchema,
   reviewSchema,
-  userSchema,
+  
+  user,
 };

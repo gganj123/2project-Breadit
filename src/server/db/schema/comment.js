@@ -2,6 +2,11 @@
 const commentSchema = new mongoose.Schema({
   comment_id : String,
   user_id : String,
+  posted_id : String,
   date: Date,
-  content: String
+  content: String,
 });
+
+const Comment = mongoose.model('Comment', commentSchema);
+
+module.exports = Comment;
