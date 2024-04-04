@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   profile: String,
   social_login_provider: String,
   social_login_id: String,
-  userRole: { type: String, default: 'user' }
+  user_role: { type: String, default: 'user' }
 });
 
 // 비밀번호 암호화
