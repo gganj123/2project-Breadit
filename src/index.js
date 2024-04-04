@@ -35,6 +35,7 @@ const recipeRouter = require('../src/server/routes/recipeRoutes');
 const reviewRouter = require('../src/server/routes/reviewRoutes');
 const userRouter = require('../src/server/routes/userRoutes');
 
+
 app.use('/api/magazines', magazineRouter);
 app.use('/api/breads', breadRouter);
 app.use('/api/comments', commentRouter);

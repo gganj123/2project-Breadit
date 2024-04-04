@@ -24,6 +24,4 @@ const breadSchema = new mongoose.Schema({
   }]
 });
 
-const Bread = mongoose.model('Bread', breadSchema);
-
-module.exports = Bread;
+module.exports = breadSchema;

@@ -1,5 +1,6 @@
 
-const Recipe = require('../db/schema/recipe'); // Recipe 모델을 가져옵니다.
+const Recipe = require('../db/repository/recipeRepository'); // Recipe 모델을 가져옵니다.
+const Comment = require('../db/repository/commentRepository');
 
 // 레시피 생성 서비스
 async function createRecipe(recipeData) {
@@ -53,16 +54,33 @@ async function deleteRecipe(recipeId) {
 
 // 레시피 댓글 조회 서비스
 async function getCommentsForRecipe(recipeId) {
-    try {
-      const recipe = await Recipe.findById(recipeId).populate('comment_id');
-      if (!recipe) {
-        throw new Error('레시피를 찾을 수 없습니다.');
-      }
-      return recipe.comment_id;
-    } catch (error) {
-      throw new Error('댓글 조회 중 오류가 발생했습니다.');
+  try {
+    // 레시피를 찾습니다.
+    const recipe = await Recipe.findById(recipeId);
+    if (!recipe) {
+      throw new Error('레시피를 찾을 수 없습니다.');
     }
+
+    // 레시피의 ID를 이용하여 해당 레시피에 연결된 댓글들을 가져옵니다.
+    const comments = await Comment.find({ post_id: recipeId });
+
+    return comments;
+  } catch (error) {
+    throw new Error('댓글 조회 중 오류가 발생했습니다.');
   }
+}
+
+// async function getCommentsForRecipe(recipeId) {
+//     try {
+//       const recipe = await Recipe.findById(recipeId).populate('comment_id');
+//       if (!recipe) {
+//         throw new Error('레시피를 찾을 수 없습니다.');
+//       }
+//       return recipe.comment_id;
+//     } catch (error) {
+//       throw new Error('댓글 조회 중 오류가 발생했습니다.');
+//     }
+//   }
 
 
 module.exports = {

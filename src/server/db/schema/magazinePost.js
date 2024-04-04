@@ -9,16 +9,12 @@ const magazinePostSchema = new mongoose.Schema(
     images: { 
       type: [String],
       validate: {
-        validator: arrayLimit,
+        validator: val => val.length <= 5,
         message: '{PATH} exceeds the limit of 5'
       }
     }, // 첨부된 이미지 ( 최대 5개 )
-    bread_id: { 
-      type: String 
-    }, // 지도 API 정보
-    instagram_info: { 
-      type: String 
-    }, // 인스타 API 정보
+    bread_id: String, // 지도 API 정보
+    instagram_info: String, // 인스타 API 정보
   },
   {
     timestamps: true,
@@ -26,10 +22,4 @@ const magazinePostSchema = new mongoose.Schema(
   }
 );
 
-function arrayLimit(val) {
-  return val.length <= 5;
-}
-
-const MagazinePost = mongoose.model('MagazinePost', magazinePostSchema);
-
-module.exports = MagazinePost;
+module.exports = magazinePostSchema;

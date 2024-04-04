@@ -59,10 +59,22 @@ async function deleteBread(req, res) {
     }
 }
 
+async function getCommentsForBread(req, res) {
+   // 요청에서 빵 ID를 가져옵니다.
+  try {
+    const breadId = req.params.id;
+    const reviews = await breadService.getCommentsForBread(breadId); // 주어진 빵 ID에 대한 리뷰 댓글을 가져옵니다.
+    res.status(200).json(reviews); // 리뷰 댓글을 JSON 형식으로 응답합니다.
+  } catch (error) {
+    res.status(500).json({ error: error.message }); // 오류가 발생한 경우 오류 메시지를 응답합니다.
+  }
+}
+
 module.exports = {
     createBread,
     getAllBreads,
     getBreadById,
     updateBread,
-    deleteBread
+    deleteBread,
+    getCommentsForBread
 };

@@ -1,4 +1,5 @@
-const Post = require('../db/schema/post'); // Post 모델을 가져옵니다.
+const Post = require('../db/repository/postRepository'); // Post 모델을 가져옵니다.
+const Comment = require('../db/repository/commentRepository');
 
 // 포스트 생성 서비스
 async function createPost(postData) {
@@ -50,19 +51,36 @@ async function deletePost(postId) {
   }
 }
 
+
+// async function getCommentsForPost(postId) {
+//   try {
+//     const post = await Post.findById(postId).populate('comment_id');
+//     if (!post) {
+//       throw new Error('포스트를 찾을 수 없습니다.');
+//     }
+//     return post.comment_id;
+//   } catch (error) {
+//     throw new Error('댓글 조회 중 오류가 발생했습니다.');
+//   }
+// }
+
 // 포스트의 댓글 필터링 서비스
 async function getCommentsForPost(postId) {
   try {
-    const post = await Post.findById(postId).populate('comment_id');
+    // 포스트를 찾습니다.
+    const post = await Post.findById(postId);
     if (!post) {
       throw new Error('포스트를 찾을 수 없습니다.');
     }
-    return post.comment_id;
+
+    // 포스트의 ID를 이용하여 해당 포스트에 연결된 댓글들을 가져옵니다.
+    const comments = await Comment.find({ post_id: postId });
+
+    return comments;
   } catch (error) {
     throw new Error('댓글 조회 중 오류가 발생했습니다.');
   }
 }
-
 module.exports = {
   createPost,
   getAllPosts,

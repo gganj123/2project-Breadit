@@ -1,4 +1,4 @@
-const Review = require('../db/schema/review'); // Review 모델을 가져옵니다.
+const Review = require('../db/repository/reviewRepository'); // Review 모델을 가져옵니다.
 
 // 리뷰 생성 서비스
 async function createReview(reviewData) {

@@ -1,5 +1,5 @@
-const Bread = require('../db/schema/bread'); // Bread 모델을 가져옵니다.
-
+const Bread = require('../db/repository/breadRepository'); // Bread 모델을 가져옵니다.
+const Review = require('../db/repository/reviewRepository'); // reviewSchema가 정의된 파일 경로
 // 브레드 생성 서비스
 async function createBread(breadData) {
   try {
@@ -50,10 +50,28 @@ async function deleteBread(breadId) {
   }
 }
 
+async function getCommentsForBread(breadId) {
+  try {
+    // 빵을 찾습니다.
+    const bread = await Bread.findById(breadId);
+    if (!bread) {
+      throw new Error('빵을 찾을 수 없습니다.');
+    }
+
+    // 빵의 ID를 이용하여 해당 빵에 연결된 리뷰의 댓글들을 가져옵니다.
+    const reviews = await Review.find({ post_id: breadId });
+
+    return reviews;
+  } catch (error) {
+    throw new Error('리뷰 댓글 조회 중 오류가 발생했습니다.');
+  }
+}
+
 module.exports = {
   createBread,
   getAllBreads,
   getBreadById,
   updateBread,
   deleteBread,
+  getCommentsForBread,
 };

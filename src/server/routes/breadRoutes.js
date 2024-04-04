@@ -17,4 +17,7 @@ router.put('/:id', breadController.updateBread);
 // DELETE /breads/:id - 브레드 삭제
 router.delete('/:id', breadController.deleteBread);
 
+// GET 요청: 빵집의 리뷰
+router.get('/:id/reviews', breadController.getCommentsForBread);
+
 module.exports = router;

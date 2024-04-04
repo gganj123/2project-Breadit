@@ -1,4 +1,4 @@
-const Comment = require('../db/schema/comment'); // Comment 모델을 가져옵니다.
+const Comment = require('../db/repository/commentRepository'); // Comment 모델을 가져옵니다.
 
 // 댓글 생성 서비스
 async function createComment(commentData) {

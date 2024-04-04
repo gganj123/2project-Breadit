@@ -1,6 +1,6 @@
 // MagazinePost 모델을 가져옴
-const MagazinePost = require('../db/schema/magazinePost'); 
-
+const MagazinePost = require('../db/repository/magazinePostRepository'); 
+const Comment = require('../db/repository/commentRepository');
 // 매거진 포스트 생성
 async function createMagazinePost(postData) {
   try {
@@ -52,18 +52,35 @@ async function deleteMagazinePost(postId) {
 }
 
 // MagazinePost 모델의 댓글 필터링 함수
-async function getCommentsForMagazinePost(postId) {
-    try {
-      const magazinePost = await MagazinePost.findById(postId).populate('comment_id');
-      if (!magazinePost) {
-        throw new Error('매거진 포스트를 찾을 수 없습니다.');
-      }
-      return magazinePost.comment_id;
-    } catch (error) {
-      throw new Error('댓글 조회 중 오류가 발생했습니다.');
-    }
-  }
+// async function getCommentsForMagazinePost(postId) {
+//     try {
+//       const magazinePost = await MagazinePost.findById(postId).populate('comment_id');
+//       if (!magazinePost) {
+//         throw new Error('매거진 포스트를 찾을 수 없습니다.');
+//       }
+//       return magazinePost.comment_id;
+//     } catch (error) {
+//       throw new Error('댓글 조회 중 오류가 발생했습니다.');
+//     }
+//   }
 
+// MagazinePost 모델의 댓글 필터링 함수
+async function getCommentsForMagazinePost(postId) {
+  try {
+    // 매거진 포스트를 찾습니다.
+    const magazinePost = await MagazinePost.findById(postId);
+    if (!magazinePost) {
+      throw new Error('매거진 포스트를 찾을 수 없습니다.');
+    }
+
+    // 매거진 포스트의 ID를 이용하여 해당 포스트에 연결된 댓글들을 가져옵니다.
+    const comments = await Comment.find({ post_id: postId });
+
+    return comments;
+  } catch (error) {
+    throw new Error('댓글 조회 중 오류가 발생했습니다.');
+  }
+}
 module.exports = {
   createMagazinePost,
   getAllMagazinePosts,

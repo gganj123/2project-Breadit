@@ -24,6 +24,4 @@ function arrayLimit(val) {
   return val.length <= 5;
 }
 
-const Recipe = mongoose.model('Recipe', recipeSchema);
-
-module.exports = Recipe;
+module.exports = recipeSchema;
