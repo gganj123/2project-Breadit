@@ -13,9 +13,6 @@ const recipeSchema = new mongoose.Schema(
       validate: [arrayLimit, '{PATH} exceeds the limit of 5'] 
     }, // 첨부된 이미지 (최대 5개)
 
-    comment_id:[{
-      type:String
-    }]
   },
   {
     timestamps: true,

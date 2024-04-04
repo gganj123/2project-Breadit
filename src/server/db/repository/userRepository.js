@@ -50,6 +50,7 @@ async function getUserProfileAndNickname(userId) {
   }
 
 module.exports = {
+  check_password,
   check_if_email_exists,
   join,
   update_user,
