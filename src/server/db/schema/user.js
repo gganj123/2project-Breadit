@@ -1,7 +1,6 @@
 // 유저
 const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
-  user_id: { type: String, unique: true }, 
   nickname: String,
   email: { type: String, unique: true },
   profile: String,

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const breadSchema = new mongoose.Schema({
-  bread_id: String,
+  bread_id: mongoose.Schema.Types.ObjectId,
   name: String,
   address: String,
   phone: String,
@@ -21,11 +21,7 @@ const breadSchema = new mongoose.Schema({
   menu: [{
     name: String,
     price: Number
-  }],
-  review:[{
-    type:String
   }]
-
 });
 
 const Bread = mongoose.model('Bread', breadSchema);

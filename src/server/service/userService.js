@@ -1,4 +1,4 @@
-const UserModel = require('../models/userModel');
+const UserModel = require('../db/repository/userRepository');
 
 // 유저 서비스 - 회원가입
 async function signUp(userData) {
@@ -9,6 +9,17 @@ async function signUp(userData) {
     throw new Error('회원가입 중 오류가 발생했습니다.');
   }
 }
+
+// 회원 정보 전체 조회 서비스
+async function getAllUsers() {
+    try {
+      const users = await UserModel.find(); // 사용자 모델에서 모든 사용자 조회
+      return users;
+    } catch (error) {
+        console.log(error);
+      throw new Error('사용자 정보 조회 중 오류가 발생했습니다.');
+    }
+  }
 
 // 유저 서비스 - 회원 정보 조회
 async function getUserById(userId) {
@@ -53,5 +64,6 @@ module.exports = {
   signUp,
   getUserById,
   updateUserInfo,
-  deleteUser
+  deleteUser,
+  getAllUsers
 };

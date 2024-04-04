@@ -1,4 +1,5 @@
 const User = require('../db/repository/userRepository');
+const UserService = require('../service/userService')
 
 // 회원가입 컨트롤러
 async function signUp(req, res) {
@@ -22,6 +23,26 @@ async function signUp(req, res) {
       message: '회원가입 중 오류가 발생했습니다.',
       error: error.message
     });
+  }
+}
+// 회원 정보 조회 컨트롤러
+async function getUserById(req, res, next) {
+  try {
+    const userId = req.params.userId;
+    const user = await UserService.getUserById(userId);
+    res.json(user); // 사용자 정보를 반환
+  } catch (error) {
+    next(error); // 오류 처리 미들웨어로 전달
+  }
+}
+
+// 회원 정보 전체 조회 컨트롤러
+async function getAllUsers(req, res, next) {
+  try {
+    const users = await UserService.getAllUsers();
+    res.json(users); // 모든 사용자 정보를 반환
+  } catch (error) {
+    next(error); // 오류 처리 미들웨어로 전달
   }
 }
 
@@ -79,5 +100,7 @@ async function deleteUser(req, res) {
 module.exports = {
   signUp,
   updateUserInfo,
-  deleteUser
+  deleteUser,
+  getAllUsers,
+  getUserById
 };
