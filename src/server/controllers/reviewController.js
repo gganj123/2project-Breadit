@@ -1,4 +1,4 @@
-const reviewService = require('../services/reviewService');
+const reviewService = require('../service/reviewService');
 
 // 리뷰 생성 컨트롤러
 async function createReview(req, res) {

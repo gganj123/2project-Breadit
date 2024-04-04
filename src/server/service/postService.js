@@ -1,4 +1,4 @@
-const Post = require('../db/repository/post'); // Post 모델을 가져옵니다.
+const Post = require('../db/schema/post'); // Post 모델을 가져옵니다.
 
 // 포스트 생성 서비스
 async function createPost(postData) {

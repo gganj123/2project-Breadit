@@ -1,4 +1,4 @@
-const recipeService = require('../services/recipeService');
+const recipeService = require('../service/recipeService');
 
 // 레시피 생성 컨트롤러
 async function createRecipe(req, res) {

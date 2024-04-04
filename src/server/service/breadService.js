@@ -1,4 +1,4 @@
-const Bread = require('../db/repository/bread'); // Bread 모델을 가져옵니다.
+const Bread = require('../db/schema/bread'); // Bread 모델을 가져옵니다.
 
 // 브레드 생성 서비스
 async function createBread(breadData) {

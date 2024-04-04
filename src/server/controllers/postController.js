@@ -1,4 +1,4 @@
-const postService = require('../services/postService');
+const postService = require('../service/postService');
 
 // 포스트 생성 컨트롤러
 async function createPost(req, res) {

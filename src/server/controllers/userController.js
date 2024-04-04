@@ -1,4 +1,4 @@
-const User = require('../models/userModel');
+const User = require('../db/repository/userRepository');
 
 // 회원가입 컨트롤러
 async function signUp(req, res) {

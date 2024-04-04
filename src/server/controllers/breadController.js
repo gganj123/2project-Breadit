@@ -1,4 +1,4 @@
-const breadService = require('../services/breadService');
+const breadService = require('../service/breadService');
 
 // 브레드 생성 컨트롤러
 async function createBread(req, res) {

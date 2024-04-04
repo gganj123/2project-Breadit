@@ -1,5 +1,5 @@
 // MagazinePost 모델을 가져옴
-const MagazinePost = require('../db/repository/magazinePost'); 
+const MagazinePost = require('../db/schema/magazinePost'); 
 
 // 매거진 포스트 생성
 async function createMagazinePost(postData) {

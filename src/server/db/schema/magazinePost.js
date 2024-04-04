@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const magazinePostSchema = new mongoose.Schema(
   {
-    post_id: String,
+    post_id: mongoose.Schema.Types.ObjectId,
     user_id: String,
     title: String,
     content: String,

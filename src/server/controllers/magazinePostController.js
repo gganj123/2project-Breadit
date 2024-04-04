@@ -1,4 +1,4 @@
-const magazineService = require('../services/magazineService');
+const magazineService = require('../service/magazinePostService');
 
 // 매거진 포스트 생성 컨트롤러
 async function createMagazinePost(req, res) {

@@ -27,7 +27,21 @@ db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
   console.log(' Connected to MongoDB')
 })
+const magazineRouter = require('../src/server/routes/magazinePostRoutes');
+const breadRouter = require('../src/server/routes/breadRoutes');
+const commentRouter = require('../src/server/routes/commentRoutes');
+const postRouter = require('../src/server/routes/postRoutes');
+const recipeRouter = require('../src/server/routes/recipeRoutes');
+const reviewRouter = require('../src/server/routes/reviewRoutes');
+const userRouter = require('../src/server/routes/userRoutes');
 
+app.use('/api/magazines', magazineRouter);
+app.use('/api/breads', breadRouter);
+app.use('/api/comments', commentRouter);
+app.use('/api/posts', postRouter);
+app.use('/api/recipes', recipeRouter);
+app.use('/api/reviews', reviewRouter);
+app.use('/api/users', userRouter);
 
 
 // app.listen(port, () => console.log(`Server listening on port ${port}`));

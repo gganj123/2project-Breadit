@@ -1,5 +1,5 @@
 
-const Recipe = require('../db/repository/recipe'); // Recipe 모델을 가져옵니다.
+const Recipe = require('../db/schema/recipe'); // Recipe 모델을 가져옵니다.
 
 // 레시피 생성 서비스
 async function createRecipe(recipeData) {

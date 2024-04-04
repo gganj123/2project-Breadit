@@ -1,4 +1,4 @@
-const commentService = require('../services/commentService');
+const commentService = require('../service/commentService');
 
 // 댓글 생성 컨트롤러
 async function createComment(req, res) {
