@@ -4,27 +4,33 @@ const UserService = require('../service/userService')
 // 회원가입 컨트롤러
 async function signUp(req, res) {
   try {
-    // 클라이언트로부터 받은 회원가입 데이터
     const userData = req.body;
 
-    // 회원가입 함수 호출
-    const newUser = await User.create(userData);
+    // 이메일 중복 검사 (가정)
+    const emailExists = await User.check_if_email_exists(userData.email);
+    if (emailExists) {
+      return res.status(409).json({
+        success: false,
+        message: '이미 사용 중인 이메일입니다.'
+      });
+    }
 
-    // 회원가입 성공 시 응답
-    res.status(201).json({
+    const newUser = await User.create(userData);
+    return res.status(201).json({
       success: true,
       message: '회원가입이 성공적으로 완료되었습니다.',
       user: newUser
     });
   } catch (error) {
-    // 회원가입 실패 시 에러 응답
-    res.status(400).json({
+    // 오류 발생 시 여기서 처리
+    return res.status(400).json({
       success: false,
       message: '회원가입 중 오류가 발생했습니다.',
       error: error.message
     });
   }
 }
+
 // 회원 정보 조회 컨트롤러
 async function getUserById(req, res, next) {
   try {
