@@ -6,7 +6,10 @@ async function signUp(userData) {
     const newUser = await UserModel.create(userData);
     return newUser;
   } catch (error) {
-    throw new Error('회원가입 중 오류가 발생했습니다.');
+    // throw new Error('회원가입 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "회원가입 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -17,7 +20,10 @@ async function getAllUsers() {
       return users;
     } catch (error) {
         console.log(error);
-      throw new Error('사용자 정보 조회 중 오류가 발생했습니다.');
+      // throw new Error('전체 사용자 정보 조회 중 오류가 발생했습니다.');
+      error.status = 500;
+      error.message = "전체 사용자 정보 조회중 오류가 발생했습니다.";
+      throw error;
     }
   }
 
@@ -30,7 +36,10 @@ async function getUserById(userId) {
     }
     return user;
   } catch (error) {
-    throw new Error('사용자 정보 조회 중 오류가 발생했습니다.');
+    // throw new Error('(특정) 사용자 정보 조회 중 오류가 발생했습니다.');
+    error.status = 400;
+    error.message = "사용자 정보 조회중 오류가 발생했습니다. (에러핸들러 처리 확인중)";
+    throw error;
   }
 }
 
@@ -43,7 +52,10 @@ async function updateUserInfo(userId, newUserData) {
     }
     return updatedUser;
   } catch (error) {
-    throw new Error('회원 정보 수정 중 오류가 발생했습니다.');
+    // throw new Error('회원 정보 수정 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "회원 정보 수정 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -56,7 +68,10 @@ async function deleteUser(userId) {
     }
     return deletedUser;
   } catch (error) {
-    throw new Error('회원 탈퇴 중 오류가 발생했습니다.');
+    // throw new Error('회원 탈퇴 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "회원 탈퇴중 오류가 발생했습니다.";
+    throw error;
   }
 }
 

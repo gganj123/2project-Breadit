@@ -7,7 +7,10 @@ async function createMagazinePost(postData) {
     const newPost = await MagazinePost.create(postData);
     return newPost;
   } catch (error) {
-    throw new Error('매거진 포스트 생성 중 오류가 발생했습니다.');
+    // throw new Error('매거진 포스트 생성 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "매거진 포스트 생성 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -17,7 +20,10 @@ async function getAllMagazinePosts() {
     const posts = await MagazinePost.find();
     return posts;
   } catch (error) {
-    throw new Error('매거진 포스트 조회 중 오류가 발생했습니다.');
+    // throw new Error('매거진 포스트 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "매거진 포스트 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -27,7 +33,10 @@ async function getMagazinePostById(postId) {
     const post = await MagazinePost.findById(postId);
     return post;
   } catch (error) {
-    throw new Error('매거진 포스트 조회 중 오류가 발생했습니다.');
+    // throw new Error('매거진 포스트 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "매거진 포스트 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -37,7 +46,10 @@ async function updateMagazinePost(postId, newData) {
     const updatedPost = await MagazinePost.findByIdAndUpdate(postId, newData, { new: true });
     return updatedPost;
   } catch (error) {
-    throw new Error('매거진 포스트 업데이트 중 오류가 발생했습니다.');
+    // throw new Error('매거진 포스트 업데이트 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "매거진 포스트 업데이트 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -47,7 +59,10 @@ async function deleteMagazinePost(postId) {
     const deletedPost = await MagazinePost.findByIdAndDelete(postId);
     return deletedPost;
   } catch (error) {
-    throw new Error('매거진 포스트 삭제 중 오류가 발생했습니다.');
+    // throw new Error('매거진 포스트 삭제 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "매거진 포스트 삭제중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -70,7 +85,10 @@ async function getCommentsForMagazinePost(postId) {
     // 매거진 포스트를 찾습니다.
     const magazinePost = await MagazinePost.findById(postId);
     if (!magazinePost) {
-      throw new Error('매거진 포스트를 찾을 수 없습니다.');
+      // throw new Error('매거진 포스트를 찾을 수 없습니다.');
+      error.status = 500;
+      error.message = "매거진 포스트를 찾을 수 없습니다.";
+      throw error;
     }
 
     // 매거진 포스트의 ID를 이용하여 해당 포스트에 연결된 댓글들을 가져옵니다.
@@ -78,7 +96,10 @@ async function getCommentsForMagazinePost(postId) {
 
     return comments;
   } catch (error) {
-    throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "댓글 조회중 오류가 발생했습니다.";
+    throw error;
   }
 }
 module.exports = {

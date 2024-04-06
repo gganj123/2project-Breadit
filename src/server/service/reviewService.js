@@ -6,7 +6,10 @@ async function createReview(reviewData) {
     const newReview = await Review.create(reviewData);
     return newReview;
   } catch (error) {
-    throw new Error('리뷰 생성 중 오류가 발생했습니다.');
+    // throw new Error('리뷰 생성 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "리뷰 생성 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -16,7 +19,10 @@ async function getAllReviews() {
     const reviews = await Review.find();
     return reviews;
   } catch (error) {
-    throw new Error('리뷰 조회 중 오류가 발생했습니다.');
+    // throw new Error('리뷰 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "리뷰 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -26,7 +32,10 @@ async function getReviewById(reviewId) {
     const review = await Review.findById(reviewId);
     return review;
   } catch (error) {
-    throw new Error('리뷰 조회 중 오류가 발생했습니다.');
+    // throw new Error('리뷰 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "리뷰 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -36,7 +45,10 @@ async function getReviewsByUserId(userId) {
     const reviews = await Review.find({ user_id: userId });
     return reviews;
   } catch (error) {
-    throw new Error('사용자 리뷰 조회 중 오류가 발생했습니다.');
+    // throw new Error('사용자 리뷰 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "사용자 리뷰 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -46,7 +58,10 @@ async function updateReview(reviewId, newData) {
     const updatedReview = await Review.findByIdAndUpdate(reviewId, newData, { new: true });
     return updatedReview;
   } catch (error) {
-    throw new Error('리뷰 업데이트 중 오류가 발생했습니다.');
+    // throw new Error('리뷰 업데이트 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "리뷰 업데이트 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -56,7 +71,10 @@ async function deleteReview(reviewId) {
     const deletedReview = await Review.findByIdAndDelete(reviewId);
     return deletedReview;
   } catch (error) {
-    throw new Error('리뷰 삭제 중 오류가 발생했습니다.');
+    // throw new Error('리뷰 삭제 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "리뷰 삭제 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 

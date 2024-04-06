@@ -7,7 +7,10 @@ async function createPost(postData) {
     const newPost = await Post.create(postData);
     return newPost;
   } catch (error) {
-    throw new Error('포스트 생성 중 오류가 발생했습니다.');
+    // throw new Error('포스트 생성 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "포스트 생성 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -17,7 +20,10 @@ async function getAllPosts() {
     const posts = await Post.find();
     return posts;
   } catch (error) {
-    throw new Error('포스트 조회 중 오류가 발생했습니다.');
+    // throw new Error('포스트 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "포스트 조회중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -27,7 +33,10 @@ async function getPostById(postId) {
     const post = await Post.findById(postId);
     return post;
   } catch (error) {
-    throw new Error('포스트 조회 중 오류가 발생했습니다.');
+    // throw new Error('포스트 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "포스트 조회중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -37,7 +46,10 @@ async function updatePost(postId, newData) {
     const updatedPost = await Post.findByIdAndUpdate(postId, newData, { new: true });
     return updatedPost;
   } catch (error) {
-    throw new Error('포스트 업데이트 중 오류가 발생했습니다.');
+    // throw new Error('포스트 업데이트 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "포스트 업데이트중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -47,7 +59,10 @@ async function deletePost(postId) {
     const deletedPost = await Post.findByIdAndDelete(postId);
     return deletedPost;
   } catch (error) {
-    throw new Error('포스트 삭제 중 오류가 발생했습니다.');
+    // throw new Error('포스트 삭제 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "포스트 삭제중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -78,7 +93,10 @@ async function getCommentsForPost(postId) {
 
     return comments;
   } catch (error) {
-    throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "댓글 조회중 오류가 발생했습니다.";
+    throw error;
   }
 }
 module.exports = {

@@ -6,7 +6,10 @@ async function createBread(breadData) {
     const newBread = await Bread.create(breadData);
     return newBread;
   } catch (error) {
-    throw new Error('브레드 생성 중 오류가 발생했습니다.');
+    // throw new Error('브레드 생성 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "브레드 생성 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -16,7 +19,10 @@ async function getAllBreads() {
     const breads = await Bread.find();
     return breads;
   } catch (error) {
-    throw new Error('브레드 조회 중 오류가 발생했습니다.');
+    // throw new Error('브레드 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "브레드 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -26,7 +32,10 @@ async function getBreadById(breadId) {
     const bread = await Bread.findById(breadId);
     return bread;
   } catch (error) {
-    throw new Error('브레드 조회 중 오류가 발생했습니다.');
+    // throw new Error('브레드 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "브레드 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -36,7 +45,10 @@ async function updateBread(breadId, newData) {
     const updatedBread = await Bread.findByIdAndUpdate(breadId, newData, { new: true });
     return updatedBread;
   } catch (error) {
-    throw new Error('브레드 업데이트 중 오류가 발생했습니다.');
+    // throw new Error('브레드 업데이트 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "브레드 업데이트 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -46,7 +58,10 @@ async function deleteBread(breadId) {
     const deletedBread = await Bread.findByIdAndDelete(breadId);
     return deletedBread;
   } catch (error) {
-    throw new Error('브레드 삭제 중 오류가 발생했습니다.');
+    // throw new Error('브레드 삭제 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "브레드 삭제 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -63,7 +78,10 @@ async function getCommentsForBread(breadId) {
 
     return reviews;
   } catch (error) {
-    throw new Error('리뷰 댓글 조회 중 오류가 발생했습니다.');
+    // throw new Error('리뷰 댓글 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "리뷰 댓글 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 

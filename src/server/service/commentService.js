@@ -6,7 +6,10 @@ async function createComment(commentData) {
     const newComment = await Comment.create(commentData);
     return newComment;
   } catch (error) {
-    throw new Error('댓글 생성 중 오류가 발생했습니다.');
+    // throw new Error('댓글 생성 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "댓글 생성 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -16,7 +19,10 @@ async function getAllComments() {
     const comments = await Comment.find();
     return comments;
   } catch (error) {
-    throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "댓글 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -26,7 +32,10 @@ async function getCommentById(commentId) {
     const comment = await Comment.findById(commentId);
     return comment;
   } catch (error) {
-    throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "해당 댓글 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -36,7 +45,10 @@ async function getCommentsByUserId(userId) {
     const comments = await Comment.find({ user_id: userId });
     return comments;
   } catch (error) {
-    throw new Error('사용자 댓글 조회 중 오류가 발생했습니다.');
+    // throw new Error('사용자 댓글 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "사용자 댓글 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -46,7 +58,10 @@ async function updateComment(commentId, newData) {
     const updatedComment = await Comment.findByIdAndUpdate(commentId, newData, { new: true });
     return updatedComment;
   } catch (error) {
-    throw new Error('댓글 업데이트 중 오류가 발생했습니다.');
+    // throw new Error('댓글 업데이트 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "댓글 업데이트 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -56,7 +71,10 @@ async function deleteComment(commentId) {
     const deletedComment = await Comment.findByIdAndDelete(commentId);
     return deletedComment;
   } catch (error) {
-    throw new Error('댓글 삭제 중 오류가 발생했습니다.');
+    // throw new Error('댓글 삭제 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "댓글 삭제 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 

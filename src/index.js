@@ -3,6 +3,7 @@ const express =  require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const app  = express();
+const errorHandler = require('../src/server/middleware/errorHandler');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
@@ -43,7 +44,7 @@ app.use('/api/posts', postRouter);
 app.use('/api/recipes', recipeRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/users', userRouter);
-
+app.use(errorHandler);
 
 // app.listen(port, () => console.log(`Server listening on port ${port}`));
 app.listen(PORT, () => {

@@ -79,12 +79,16 @@ async function findById(userId) {
     // UserModel.findById를 사용하여 해당 ID에 해당하는 사용자 조회
     const user = await model.user.findById(userId);
     if (!user) {
-      throw new Error('해당 사용자를 찾을 수 없습니다.');
+      // 특정 사용자를 찾을 수 없는 경우
+      let error = new Error('해당 사용자를 찾을 수 없습니다.');
+      error.status = 404;  // Not Found
+      throw error;
     }
     return user;
   } catch (error) {
     console.error('사용자 정보 조회 중 오류:', error);
-    throw new Error('사용자 정보 조회 중 오류가 발생했습니다.');
+    error.status = 500;  // Internal Server Error
+    throw error;
   }
 }
 // userId로 유저 조회 및 필요한 데이터 반환하는 함수

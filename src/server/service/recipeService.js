@@ -8,7 +8,10 @@ async function createRecipe(recipeData) {
     const newRecipe = await Recipe.create(recipeData);
     return newRecipe;
   } catch (error) {
-    throw new Error('레시피 생성 중 오류가 발생했습니다.');
+    // throw new Error('레시피 생성 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "레시피 생성 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -18,7 +21,10 @@ async function getAllRecipes() {
     const recipes = await Recipe.find();
     return recipes;
   } catch (error) {
-    throw new Error('레시피 조회 중 오류가 발생했습니다.');
+    // throw new Error('레시피 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "레시피 조회중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -28,7 +34,10 @@ async function getRecipeById(recipeId) {
     const recipe = await Recipe.findById(recipeId);
     return recipe;
   } catch (error) {
-    throw new Error('레시피 조회 중 오류가 발생했습니다.');
+    // throw new Error('레시피 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "레시피 조회중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -38,7 +47,10 @@ async function updateRecipe(recipeId, newData) {
     const updatedRecipe = await Recipe.findByIdAndUpdate(recipeId, newData, { new: true });
     return updatedRecipe;
   } catch (error) {
-    throw new Error('레시피 업데이트 중 오류가 발생했습니다.');
+    // throw new Error('레시피 업데이트 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "레시피 업데이트 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -48,7 +60,10 @@ async function deleteRecipe(recipeId) {
     const deletedRecipe = await Recipe.findByIdAndDelete(recipeId);
     return deletedRecipe;
   } catch (error) {
-    throw new Error('레시피 삭제 중 오류가 발생했습니다.');
+    // throw new Error('레시피 삭제 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "레시피 삭제 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
@@ -66,7 +81,10 @@ async function getCommentsForRecipe(recipeId) {
 
     return comments;
   } catch (error) {
-    throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
+    error.status = 500;
+    error.message = "댓글 조회 중 오류가 발생했습니다.";
+    throw error;
   }
 }
 
