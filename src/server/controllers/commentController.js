@@ -51,6 +51,18 @@ async function getCommentsByUserId(req, res, next) {
     }
 }
 
+// 특정 포스트 댓글 가져오기 컨트롤러
+async function getCommentsByPostId(req, res, next) {
+    try {
+        const postId = req.params.postId;
+        const comments = await commentService.getCommentsByPostId(postId);
+        res.json(comments);
+    } catch (error) {
+        // 오류가 발생하면 next(error)를 호출하여 미들웨어 체인 상의 다음 오류 처리 미들웨어로 전달합니다.
+        next(error);
+    }
+}
+
 // 댓글 업데이트 컨트롤러
 async function updateComment(req, res, next) {
     try {
@@ -82,5 +94,6 @@ module.exports = {
     getCommentById,
     getCommentsByUserId,
     updateComment,
-    deleteComment
+    deleteComment,
+    getCommentsByPostId
 };

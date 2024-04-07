@@ -3,9 +3,23 @@ const mongoose = require('mongoose');
 const magazinePostSchema = new mongoose.Schema(
   {
     post_id: mongoose.Schema.Types.ObjectId,
-    user_id: String,
-    title: String,
-    content: String,
+    user_id: {
+       type: String,
+       required: true 
+      },
+    nickname: { 
+      type: String, 
+      required: true 
+    }, 
+    profile: String,
+    title: { 
+      type: String, 
+      required: true 
+    },
+    content: { 
+      type: String, 
+      required: true 
+    },
     images: { 
       type: [String],
       validate: {
@@ -18,7 +32,6 @@ const magazinePostSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    versionKey: false,
   }
 );
 

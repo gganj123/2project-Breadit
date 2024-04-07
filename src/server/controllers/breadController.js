@@ -1,13 +1,24 @@
 const breadService = require('../service/breadService');
 
 // 브레드 생성 컨트롤러
+// async function createBread(req, res, next) {
+//     try {
+//         const breadData = req.body;
+//         const newBread = await breadService.createBread(breadData);
+//     } catch (error) {
+//         // res.status(500).json({ message: error.message });
+//       next(error)
+//     }
+// }
+// 브레드 생성 컨트롤러
 async function createBread(req, res, next) {
     try {
         const breadData = req.body;
         const newBread = await breadService.createBread(breadData);
+        res.status(201).json(newBread); // 브레드가 성공적으로 생성되었음을 클라이언트에게 알림
     } catch (error) {
-        // res.status(500).json({ message: error.message });
-      next(error)
+        // 오류가 발생하면 next(error)를 호출하여 미들웨어 체인 상의 다음 오류 처리 미들웨어로 전달합니다.
+        next(error);
     }
 }
 

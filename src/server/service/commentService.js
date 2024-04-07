@@ -52,6 +52,19 @@ async function getCommentsByUserId(userId) {
   }
 }
 
+// 포스트 ID로 필터된 댓글 가져오기 서비스
+async function getCommentsByPostId(postId) {
+  try {
+    const comments = await Comment.find({ post_id: postId });
+    return comments;
+  } catch (error) {
+    error.status = 500;
+    error.message = "포스트 댓글 조회 중 오류가 발생했습니다.";
+    throw error;
+  }
+}
+
+
 // 댓글 업데이트 서비스
 async function updateComment(commentId, newData) {
   try {
@@ -85,4 +98,5 @@ module.exports = {
   getCommentsByUserId,
   updateComment,
   deleteComment,
+  getCommentsByPostId
 };

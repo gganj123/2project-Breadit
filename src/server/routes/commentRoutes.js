@@ -20,4 +20,8 @@ router.put('/:id', commentController.updateComment);
 // DELETE 요청: 댓글 삭제
 router.delete('/:id', commentController.deleteComment);
 
+// 포스트 ID로 필터된 댓글 가져오기 라우터
+router.get('/posts/:postId', commentController.getCommentsByPostId);
+
+
 module.exports = router;
