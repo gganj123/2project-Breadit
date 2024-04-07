@@ -12,6 +12,14 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_DB_URI;
 
+const cors = require("cors");
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN, // 클라이언트 주소 env에 넣어주시면 될것같아요!
+    credentials: true,
+  })
+);
+
 
 app.get('/', (req, res) => {
     res.send('hello express');
@@ -35,6 +43,8 @@ const postRouter = require('../src/server/routes/postRoutes');
 const recipeRouter = require('../src/server/routes/recipeRoutes');
 const reviewRouter = require('../src/server/routes/reviewRoutes');
 const userRouter = require('../src/server/routes/userRoutes');
+const likeRouter = require('../src/server/routes/likeRoutes');
+const bookmarkRouter = require('../src/server/routes/bookmarkRoutes');
 
 
 app.use('/api/magazines', magazineRouter);
@@ -44,6 +54,8 @@ app.use('/api/posts', postRouter);
 app.use('/api/recipes', recipeRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/users', userRouter);
+app.use('/api/likes',likeRouter);
+app.use('/api/bookmarks',bookmarkRouter);
 app.use(errorHandler);
 
 // app.listen(port, () => console.log(`Server listening on port ${port}`));
