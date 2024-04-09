@@ -16,11 +16,11 @@ async function createReview(req, res, next) {
   }
 }
 
-// 모든 리뷰 가져오기 컨트롤러
 async function getAllReviews(req, res, next) {
   try {
-    const reviews = await reviewService.getAllReviews();
-    res.json(reviews);
+    const { post_id, user_id } = req.query;
+    const reviews = await reviewService.getAllReviews(post_id, user_id);
+    res.status(200).json(reviews);
   } catch (error) {
     next(error);
   }
@@ -36,17 +36,6 @@ async function getReviewById(req, res, next) {
       return;
     }
     res.json(review);
-  } catch (error) {
-    next(error);
-  }
-}
-
-// 특정 사용자의 리뷰 가져오기 컨트롤러
-async function getReviewsByUserId(req, res, next) {
-  try {
-    const userId = req.params.userId;
-    const reviews = await reviewService.getReviewsByUserId(userId);
-    res.json(reviews);
   } catch (error) {
     next(error);
   }
@@ -86,7 +75,6 @@ module.exports = {
   createReview,
   getAllReviews,
   getReviewById,
-  getReviewsByUserId,
   updateReview,
   deleteReview,
 };

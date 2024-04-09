@@ -9,12 +9,12 @@ async function createReview(reviewData) {
   }
 }
 
-async function getAllReviews() {
+async function getAllReviews(filter) {
   try {
-    const reviews = await Review.find();
+    const reviews = await Review.find(filter);
     return reviews;
   } catch (error) {
-    throw new Error("Error fetching reviews");
+    throw new Error("Error fetching reviews from database");
   }
 }
 

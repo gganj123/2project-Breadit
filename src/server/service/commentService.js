@@ -5,18 +5,23 @@ async function createComment(commentData) {
     const newComment = await CommentRepository.createComment(commentData);
     return newComment;
   } catch (error) {
-    error.status = 500;
-    error.message = "댓글 생성 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("Error creating comment");
   }
 }
 
-async function getAllComments() {
+async function getAllComments(post_id, user_id) {
   try {
-    const comments = await CommentRepository.getAllComments();
+    let filter = {};
+    if (post_id) {
+      filter.post_id = post_id;
+    }
+    if (user_id) {
+      filter.user_id = user_id;
+    }
+    const comments = await CommentRepository.getAllComments(filter);
     return comments;
   } catch (error) {
-    throw new Error("모든 코멘트 조회 중 오류가 발생했습니다.");
+    throw new Error("Error fetching comments");
   }
 }
 
@@ -25,19 +30,19 @@ async function getCommentById(commentId) {
     const comment = await CommentRepository.getCommentById(commentId);
     return comment;
   } catch (error) {
-    throw new Error("코멘트 조회 중 오류가 발생했습니다.");
+    throw new Error("Error fetching comment");
   }
 }
 
-async function updateComment(commentId, newCommentData) {
+async function updateComment(commentId, newData) {
   try {
     const updatedComment = await CommentRepository.updateComment(
       commentId,
-      newCommentData
+      newData
     );
     return updatedComment;
   } catch (error) {
-    throw new Error("코멘트 업데이트 중 오류가 발생했습니다.");
+    throw new Error("Error updating comment");
   }
 }
 
@@ -46,7 +51,7 @@ async function deleteComment(commentId) {
     const deletedComment = await CommentRepository.deleteComment(commentId);
     return deletedComment;
   } catch (error) {
-    throw new Error("코멘트 삭제 중 오류가 발생했습니다.");
+    throw new Error("Error deleting comment");
   }
 }
 

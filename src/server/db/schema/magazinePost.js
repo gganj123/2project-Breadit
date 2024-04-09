@@ -21,9 +21,6 @@ const magazinePostSchema = new mongoose.Schema(
       required: true,
     },
     images: String,
-    // 첨부된 이미지 ( 최대 5개 )
-    bread_id: String, // 지도 API 정보
-    instagram_info: String, // 인스타 API 정보
   },
   {
     timestamps: true,
@@ -31,3 +28,4 @@ const magazinePostSchema = new mongoose.Schema(
 );
 
 module.exports = magazinePostSchema;
+// module.export = mongoose.model("MagazinePost", magazinePostSchema);

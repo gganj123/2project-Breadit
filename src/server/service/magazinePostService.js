@@ -3,26 +3,26 @@ const MagazinePost = require("../db/repository/magazinePostRepository");
 const Comment = require("../db/repository/commentRepository");
 // 매거진 포스트 생성
 async function createMagazinePost(postData) {
-  try {
-    const newPost = await MagazinePost.create(postData);
-    return newPost;
-  } catch (error) {
-    // throw new Error('매거진 포스트 생성 중 오류가 발생했습니다.');
+  const newPost = await MagazinePost.create(postData);
+  if (!newPost) {
+    const error = new Error("매거진 포스트를 생성할 수 없습니다.");
     error.status = 500;
-    error.message = "매거진 포스트 생성 중 오류가 발생했습니다.";
     throw error;
   }
+  return newPost;
 }
 
 // 모든 매거진 포스트 가져오기
 async function getAllMagazinePosts() {
   try {
     const posts = await MagazinePost.find();
+    if (!posts || posts.length === 0) {
+      const error = new Error("매거진 글을 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
     return posts;
   } catch (error) {
-    // throw new Error('매거진 포스트 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "매거진 포스트 조회 중 오류가 발생했습니다.";
     throw error;
   }
 }
@@ -31,41 +31,45 @@ async function getAllMagazinePosts() {
 async function getMagazinePostById(postId) {
   try {
     const post = await MagazinePost.findById(postId);
+    if (!post) {
+      const error = new Error(
+        "postId에 해당하는 매거진 글을 찾을 수 없습니다."
+      );
+      error.status = 404;
+      throw error;
+    }
     return post;
   } catch (error) {
-    // throw new Error('매거진 포스트 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "매거진 포스트 조회 중 오류가 발생했습니다.";
     throw error;
   }
 }
 
 // 매거진 포스트 업데이트
 async function updateMagazinePost(postId, newData) {
-  try {
-    const updatedPost = await MagazinePost.findByIdAndUpdate(postId, newData, {
-      new: true,
-    });
-    return updatedPost;
-  } catch (error) {
-    // throw new Error('매거진 포스트 업데이트 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "매거진 포스트 업데이트 중 오류가 발생했습니다.";
+  const updatedPost = await MagazinePost.findByIdAndUpdate(postId, newData, {
+    new: true,
+  });
+  if (!updatedPost) {
+    const error = new Error(
+      "postId에 해당하는 매거진 포스트를 찾을 수 없습니다."
+    );
+    error.status = 404;
     throw error;
   }
+  return updatedPost;
 }
 
 // 매거진 포스트 삭제
 async function deleteMagazinePost(postId) {
-  try {
-    const deletedPost = await MagazinePost.findByIdAndDelete(postId);
-    return deletedPost;
-  } catch (error) {
-    // throw new Error('매거진 포스트 삭제 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "매거진 포스트 삭제중 오류가 발생했습니다.";
+  const deletedPost = await MagazinePost.findByIdAndDelete(postId);
+  if (!deletedPost) {
+    const error = new Error(
+      "postId에 해당하는 매거진 포스트를 찾을 수 없습니다."
+    );
+    error.status = 404;
     throw error;
   }
+  return deletedPost;
 }
 
 // MagazinePost 모델의 댓글 필터링 함수
@@ -83,27 +87,14 @@ async function deleteMagazinePost(postId) {
 
 // MagazinePost 모델의 댓글 필터링 함수
 async function getCommentsForMagazinePost(postId) {
-  try {
-    // 매거진 포스트를 찾습니다.
-    const magazinePost = await MagazinePost.findById(postId);
-    if (!magazinePost) {
-      // throw new Error('매거진 포스트를 찾을 수 없습니다.');
-      error.status = 500;
-      error.message = "매거진 포스트를 찾을 수 없습니다.";
-      throw error;
-    }
-
-    // 매거진 포스트의 ID를 이용하여 해당 포스트에 연결된 댓글들을 가져옵니다.
-    const comments = await Comment.find({ post_id: postId });
-
-    return comments;
-  } catch (error) {
-    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "댓글 조회중 오류가 발생했습니다.";
+  const comments = await Comment.find({ post_id: postId });
+  if (comments.length === 0) {
+    const error = new Error("해당 매거진 글에 연결된 댓글이 없습니다.");
+    error.status = 404;
     throw error;
   }
 }
+
 module.exports = {
   createMagazinePost,
   getAllMagazinePosts,

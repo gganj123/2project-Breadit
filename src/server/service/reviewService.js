@@ -9,9 +9,16 @@ async function createReview(reviewData) {
   }
 }
 
-async function getAllReviews() {
+async function getAllReviews(post_id, user_id) {
   try {
-    const reviews = await ReviewRepository.getAllReviews();
+    let filter = {};
+    if (post_id) {
+      filter.post_id = post_id;
+    }
+    if (user_id) {
+      filter.user_id = user_id;
+    }
+    const reviews = await ReviewRepository.getAllReviews(filter);
     return reviews;
   } catch (error) {
     throw new Error("Error fetching reviews");

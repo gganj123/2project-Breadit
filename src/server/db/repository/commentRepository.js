@@ -5,58 +5,45 @@ async function createComment(commentData) {
     const newComment = await Comment.create(commentData);
     return newComment;
   } catch (error) {
-    error.status = 500;
-    error.message = "코멘트 생성중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("Error creating comment");
   }
 }
 
-async function getAllComments() {
+async function getAllComments(filter) {
   try {
-    const comments = await Comment.find();
+    const comments = await Comment.find(filter);
     return comments;
   } catch (error) {
-    throw new Error("모든 코멘트 조회 중 오류가 발생했습니다.");
+    throw new Error("Error fetching comments from database");
   }
 }
 
 async function getCommentById(commentId) {
   try {
     const comment = await Comment.findById(commentId);
-    if (!comment) {
-      throw new Error("해당 코멘트를 찾을 수 없습니다.");
-    }
     return comment;
   } catch (error) {
-    throw new Error("코멘트 조회 중 오류가 발생했습니다.");
+    throw new Error("Error fetching comment");
   }
 }
 
-async function updateComment(commentId, newCommentData) {
+async function updateComment(commentId, newData) {
   try {
-    const updatedComment = await Comment.findByIdAndUpdate(
-      commentId,
-      newCommentData,
-      { new: true }
-    );
-    if (!updatedComment) {
-      throw new Error("해당 코멘트를 찾을 수 없습니다.");
-    }
+    const updatedComment = await Comment.findByIdAndUpdate(commentId, newData, {
+      new: true,
+    });
     return updatedComment;
   } catch (error) {
-    throw new Error("코멘트 업데이트 중 오류가 발생했습니다.");
+    throw new Error("Error updating comment");
   }
 }
 
 async function deleteComment(commentId) {
   try {
     const deletedComment = await Comment.findByIdAndDelete(commentId);
-    if (!deletedComment) {
-      throw new Error("해당 코멘트를 찾을 수 없습니다.");
-    }
     return deletedComment;
   } catch (error) {
-    throw new Error("코멘트 삭제 중 오류가 발생했습니다.");
+    throw new Error("Error deleting comment");
   }
 }
 
