@@ -1,93 +1,52 @@
-const Comment = require('../db/repository/commentRepository'); // Comment 모델을 가져옵니다.
+const CommentRepository = require("../db/repository/commentRepository");
 
-// 댓글 생성 서비스
 async function createComment(commentData) {
   try {
-    const newComment = await Comment.create(commentData);
+    const newComment = await CommentRepository.createComment(commentData);
     return newComment;
   } catch (error) {
-    // throw new Error('댓글 생성 중 오류가 발생했습니다.');
     error.status = 500;
     error.message = "댓글 생성 중 오류가 발생했습니다.";
     throw error;
   }
 }
 
-// 모든 댓글 가져오기 서비스
 async function getAllComments() {
   try {
-    const comments = await Comment.find();
+    const comments = await CommentRepository.getAllComments();
     return comments;
   } catch (error) {
-    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "댓글 조회 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("모든 코멘트 조회 중 오류가 발생했습니다.");
   }
 }
 
-// 특정 댓글 가져오기 서비스
 async function getCommentById(commentId) {
   try {
-    const comment = await Comment.findById(commentId);
+    const comment = await CommentRepository.getCommentById(commentId);
     return comment;
   } catch (error) {
-    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "해당 댓글 조회 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("코멘트 조회 중 오류가 발생했습니다.");
   }
 }
 
-// 특정 사용자의 댓글 가져오기 서비스
-async function getCommentsByUserId(userId) {
+async function updateComment(commentId, newCommentData) {
   try {
-    const comments = await Comment.find({ user_id: userId });
-    return comments;
-  } catch (error) {
-    // throw new Error('사용자 댓글 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "사용자 댓글 조회 중 오류가 발생했습니다.";
-    throw error;
-  }
-}
-
-// 포스트 ID로 필터된 댓글 가져오기 서비스
-async function getCommentsByPostId(postId) {
-  try {
-    const comments = await Comment.find({ post_id: postId });
-    return comments;
-  } catch (error) {
-    error.status = 500;
-    error.message = "포스트 댓글 조회 중 오류가 발생했습니다.";
-    throw error;
-  }
-}
-
-
-// 댓글 업데이트 서비스
-async function updateComment(commentId, newData) {
-  try {
-    const updatedComment = await Comment.findByIdAndUpdate(commentId, newData, { new: true });
+    const updatedComment = await CommentRepository.updateComment(
+      commentId,
+      newCommentData
+    );
     return updatedComment;
   } catch (error) {
-    // throw new Error('댓글 업데이트 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "댓글 업데이트 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("코멘트 업데이트 중 오류가 발생했습니다.");
   }
 }
 
-// 댓글 삭제 서비스
 async function deleteComment(commentId) {
   try {
-    const deletedComment = await Comment.findByIdAndDelete(commentId);
+    const deletedComment = await CommentRepository.deleteComment(commentId);
     return deletedComment;
   } catch (error) {
-    // throw new Error('댓글 삭제 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "댓글 삭제 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("코멘트 삭제 중 오류가 발생했습니다.");
   }
 }
 
@@ -95,8 +54,6 @@ module.exports = {
   createComment,
   getAllComments,
   getCommentById,
-  getCommentsByUserId,
   updateComment,
   deleteComment,
-  getCommentsByPostId
 };

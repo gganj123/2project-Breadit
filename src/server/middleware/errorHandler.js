@@ -42,11 +42,12 @@ const errorHandler = (error, req, res, next) => {
   // 에러 상태 코드가 지정되어 있지 않다면 500 (Internal Server Error) 사용
   const status = error.status || 500;
   // 에러 메시지가 지정되어 있지 않다면 일반적인 서버 에러 메시지 사용
-  const message = error.message || '일반적인 서버 에러 메세지 ~~~ Internal Server Error!!';
+  const message =
+    error.message || "일반적인 서버 에러 메세지 ~~~ Internal Server Error!!";
 
   // 클라이언트에 에러 상태 코드와 메시지를 JSON 형태로 전송
   res.status(status).json({ error: message });
-  next();
+  // next();
 };
 
 module.exports = errorHandler;

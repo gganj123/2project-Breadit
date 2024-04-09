@@ -1,27 +1,26 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const commentController = require('../controllers/commentController');
+const commentController = require("../controllers/commentController");
 
-// POST 요청: 댓글 생성
-router.post('/', commentController.createComment);
+// 댓글 생성 API 엔드포인트
+router.post("/", commentController.createComment);
 
-// GET 요청: 모든 댓글 가져오기
-router.get('/', commentController.getAllComments);
+// 모든 댓글 가져오기 API 엔드포인트
+router.get("/", commentController.getAllComments);
 
-// GET 요청: 특정 댓글 가져오기
-router.get('/:id', commentController.getCommentById);
+// 특정 댓글 가져오기 API 엔드포인트
+router.get("/:id", commentController.getCommentById);
 
-// GET 요청: 특정 사용자의 댓글 가져오기
-router.get('/user/:userId', commentController.getCommentsByUserId);
+// 특정 사용자의 댓글 가져오기 API 엔드포인트
+router.get("/user/:userId", commentController.getCommentsByUserId);
 
-// PUT 요청: 댓글 업데이트
-router.put('/:id', commentController.updateComment);
+// 특정 포스트의 댓글 가져오기 API 엔드포인트
+router.get("/posts/:postId", commentController.getCommentsByPostId);
 
-// DELETE 요청: 댓글 삭제
-router.delete('/:id', commentController.deleteComment);
+// 댓글 업데이트 API 엔드포인트
+router.put("/:id", commentController.updateComment);
 
-// 포스트 ID로 필터된 댓글 가져오기 라우터
-router.get('/posts/:postId', commentController.getCommentsByPostId);
-
+// 댓글 삭제 API 엔드포인트
+router.delete("/:id", commentController.deleteComment);
 
 module.exports = router;

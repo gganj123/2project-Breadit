@@ -1,6 +1,6 @@
 // MagazinePost 모델을 가져옴
-const MagazinePost = require('../db/repository/magazinePostRepository'); 
-const Comment = require('../db/repository/commentRepository');
+const MagazinePost = require("../db/repository/magazinePostRepository");
+const Comment = require("../db/repository/commentRepository");
 // 매거진 포스트 생성
 async function createMagazinePost(postData) {
   try {
@@ -43,7 +43,9 @@ async function getMagazinePostById(postId) {
 // 매거진 포스트 업데이트
 async function updateMagazinePost(postId, newData) {
   try {
-    const updatedPost = await MagazinePost.findByIdAndUpdate(postId, newData, { new: true });
+    const updatedPost = await MagazinePost.findByIdAndUpdate(postId, newData, {
+      new: true,
+    });
     return updatedPost;
   } catch (error) {
     // throw new Error('매거진 포스트 업데이트 중 오류가 발생했습니다.');
@@ -108,5 +110,5 @@ module.exports = {
   getMagazinePostById,
   updateMagazinePost,
   deleteMagazinePost,
-  getCommentsForMagazinePost
+  getCommentsForMagazinePost,
 };
