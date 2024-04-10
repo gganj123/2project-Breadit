@@ -11,32 +11,19 @@ async function createBookmark(bookmarkData) {
 }
 
 // 모든 북마크 조회 함수
-async function getAllBookmarks() {
+async function getAllBookmarks(user_id, post_id) {
   try {
-    const bookmarks = await Bookmark.find();
+    let filter = {};
+    if (user_id) {
+      filter.user_id = user_id;
+    }
+    if (post_id) {
+      filter.post_id = post_id;
+    }
+    const bookmarks = await Bookmark.find(filter);
     return bookmarks;
   } catch (error) {
     throw new Error("모든 북마크를 조회하는 중 오류가 발생했습니다.");
-  }
-}
-
-// 특정 사용자의 북마크 조회 함수
-async function getUserBookmarks(userId) {
-  try {
-    const userBookmarks = await Bookmark.find({ user_id: userId });
-    return userBookmarks;
-  } catch (error) {
-    throw new Error("사용자의 북마크를 조회하는 중 오류가 발생했습니다.");
-  }
-}
-
-// 특정 포스트의 북마크 조회 함수
-async function getPostBookmarks(postId) {
-  try {
-    const postBookmarks = await Bookmark.find({ post_id: postId });
-    return postBookmarks;
-  } catch (error) {
-    throw new Error("포스트의 북마크를 조회하는 중 오류가 발생했습니다.");
   }
 }
 
@@ -56,7 +43,5 @@ async function deleteBookmark(bookmarkId) {
 module.exports = {
   createBookmark,
   getAllBookmarks,
-  getUserBookmarks,
-  getPostBookmarks,
   deleteBookmark,
 };

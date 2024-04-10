@@ -1,23 +1,23 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const postController = require('../controllers/postController');
+const postController = require("../controllers/postController");
 
 // POST 요청: 포스트 생성
-router.post('/', postController.createPost);
+router.post("/", postController.createPost);
 
 // GET 요청: 모든 포스트 가져오기
-router.get('/', postController.getAllPosts);
+router.get("/", postController.getAllPosts);
 
 // GET 요청: 특정 포스트 가져오기
-router.get('/:id', postController.getPostById);
+router.get("/:id", postController.getPostById);
 
 // PUT 요청: 포스트 업데이트
-router.put('/:id', postController.updatePost);
+router.put("/:id", postController.updatePost);
 
 // DELETE 요청: 포스트 삭제
-router.delete('/:id', postController.deletePost);
+router.delete("/:id", postController.deletePost);
 
 // GET 요청: 포스트의 댓글 필터링
-router.get('/:id/comments', postController.getCommentsForPost);
+// router.get('/:id/comments', postController.getCommentsForPost);
 
 module.exports = router;

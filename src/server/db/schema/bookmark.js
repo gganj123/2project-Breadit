@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 const bookmarkSchema = new mongoose.Schema(
   {
-    bookmark_id: mongoose.Schema.Types.ObjectId,
     user_id: {
       type: String,
       required: true,
@@ -18,3 +17,4 @@ const bookmarkSchema = new mongoose.Schema(
 );
 
 module.exports = bookmarkSchema;
+// module.exports = mongoose.model("Bookmark", bookmarkSchema);

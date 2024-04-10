@@ -18,6 +18,6 @@ router.put("/:id", magazineController.updateMagazinePost);
 router.delete("/:id", magazineController.deleteMagazinePost);
 
 // MagazinePost 모델의 댓글 필터링
-router.get("/:id/comments", magazineController.getCommentsForMagazinePost);
+// router.get("/:id/comments", magazineController.getCommentsForMagazinePost);
 
 module.exports = router;
