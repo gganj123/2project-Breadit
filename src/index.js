@@ -12,14 +12,6 @@ app.use(express.static(path.join(process.cwd(), "public")));
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_DB_URI;
 
-const cors = require("cors");
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN, // 클라이언트 주소 env에 넣어주시면 될것같아요!
-    credentials: true,
-  })
-);
-
 app.get("/", (req, res) => {
   res.send("hello express");
 });

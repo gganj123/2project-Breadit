@@ -20,7 +20,7 @@ router.put("/:id", postController.updatePost);
 // DELETE 요청: 포스트 삭제
 router.delete("/:id", postController.deletePost);
 
-// GET 요청: 포스트의 댓글 필터링
-router.get("/:id/comments", postController.getCommentsForPost);
+// 게시물 좋아요 토글 라우터
+router.post("/toggle", postController.toggleLikeController);
 
 module.exports = router;

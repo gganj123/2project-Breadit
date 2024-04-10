@@ -2,6 +2,17 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const model = require("../schema");
 
+// 회원 정보 조회 메서드
+async function getUserById(userId) {
+  try {
+    const userInfo = await User.findById(userId);
+    return userInfo;
+  } catch (error) {
+    // console.log(error)
+    throw new Error("회원 정보 조회 중 오류가 발생했습니다.");
+  }
+}
+
 // 비밀번호 확인 메서드
 async function check_password(candidate_password) {
   try {
@@ -9,6 +20,11 @@ async function check_password(candidate_password) {
   } catch (error) {
     throw new Error("비밀번호 확인 중 오류가 발생했습니다.");
   }
+}
+
+// 이메일로 사용자 찾기 메서드 추가
+async function findByEmail(email) {
+  return await model.user.findOne({ email });
 }
 
 // 이메일 중복 확인 메서드
@@ -32,7 +48,6 @@ async function find() {
 // 회원가입 함수
 async function create(userData) {
   try {
-    // UserModel.create를 사용하여 새로운 사용자 생성
     const newUser = await model.user.create(userData);
     return newUser;
   } catch (error) {
@@ -82,7 +97,6 @@ async function findByIdAndDelete(user_id) {
 //회원 정보 조회 메서드
 async function findById(userId) {
   try {
-    // UserModel.findById를 사용하여 해당 ID에 해당하는 사용자 조회
     const user = await model.user.findById(userId);
     if (!user) {
       // 특정 사용자를 찾을 수 없는 경우
@@ -115,6 +129,7 @@ async function getUserProfileAndNickname(userId) {
 module.exports = {
   check_password,
   check_if_email_exists,
+  findByEmail,
   // join,
   update_user,
   // delete_user,

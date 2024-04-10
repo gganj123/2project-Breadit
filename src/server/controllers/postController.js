@@ -95,6 +95,23 @@ async function getCommentsForPost(req, res, next) {
   }
 }
 
+// 게시물 좋아요 토글 컨트롤러
+async function toggleLikeController(req, res) {
+  const { user_id, post_id } = req.body;
+
+  try {
+    // 좋아요 토글 함수 호출
+    const updatedPost = await postService.toggleLike(user_id, post_id);
+
+    // 클라이언트에 업데이트된 게시물 데이터 전송
+    res.json(updatedPost);
+  } catch (error) {
+    // 에러 발생 시 에러 메시지 전송
+    console.error("좋아요 토글 중 오류 발생:", error);
+    res.status(500).json({ error: "서버 오류" });
+  }
+}
+
 module.exports = {
   createPost,
   getAllPosts,
@@ -102,4 +119,5 @@ module.exports = {
   updatePost,
   deletePost,
   getCommentsForPost,
+  toggleLikeController,
 };

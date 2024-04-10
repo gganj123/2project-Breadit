@@ -1,34 +1,31 @@
-const User = require('../db/repository/userRepository');
-const UserService = require('../service/userService')
+const User = require("../db/repository/userRepository");
+const UserService = require("../service/userService");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
-// 회원가입 컨트롤러
+/// 회원가입 컨트롤러
 async function signUp(req, res, next) {
   try {
     const userData = req.body;
 
-    // 이메일 중복 검사 (가정)
-    const emailExists = true; // 에러 시뮬레이션을 위해 항상 true로 설정
+    // 이메일 중복 검사
+    const emailExists = await User.check_if_email_exists(userData.email);
     if (emailExists) {
       return res.status(409).json({
         success: false,
-        message: '이미 사용 중인 이메일입니다.'
+        message: "이미 사용 중인 이메일입니다.",
       });
     }
 
+    // 유저 생성
     const newUser = await User.create(userData);
     return res.status(201).json({
       success: true,
-      message: '회원가입이 성공적으로 완료되었습니다.',
-      user: newUser
+      message: "회원가입이 성공적으로 완료되었습니다.",
+      user: newUser,
     });
   } catch (error) {
-    // 오류 발생 시 여기서 처리
-    // return res.status(400).json({
-    //   success: false,
-    //   message: '회원가입 중 오류가 발생했습니다.',
-    //   error: error.message
-    // });
-    next(error)
+    next(error);
   }
 }
 
@@ -36,18 +33,26 @@ async function signUp(req, res, next) {
 async function getUserById(req, res, next) {
   try {
     const userId = req.params.userId;
-    // 존재하지 않는 사용자 ID에 대한 에러 시뮬레이션
-    if (!userId || userId === 'nonexistent') {
-      throw new Error('사용자를 찾을 수 없습니다.'); // 의도적 에러 발생
+    const requestingUserId = req.user.userId; // 토큰에서 추출된 사용자 ID
+
+    // URL의 userId와 토큰에서 추출된 userId가 일치하는지 확인
+    if (userId !== requestingUserId) {
+      console.log(
+        `Requested userId: ${userId}, Authorized userId: ${requestingUserId}`
+      );
+      return res.status(403).json({
+        message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
+      });
     }
 
     const user = await UserService.getUserById(userId);
     if (!user) {
-      throw new Error('사용자 정보가 없습니다.');
+      return res.status(404).json({ message: "사용자 정보가 없습니다." });
     }
 
     res.json(user); // 사용자 정보를 반환
   } catch (error) {
+    console.log(`Error retrieving user: ${error.message}`);
     next(error); // 오류 처리 미들웨어로 전달
   }
 }
@@ -70,24 +75,20 @@ async function updateUserInfo(req, res, next) {
     const newUserData = req.body;
 
     // 회원 정보 수정 함수 호출
-    const updatedUser = await User.findByIdAndUpdate(userId, newUserData, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(userId, newUserData, {
+      new: true,
+    });
 
     if (!updatedUser) {
-      throw new Error('회원 정보가 존재하지 않습니다.');
+      throw new Error("회원 정보가 존재하지 않습니다.");
     }
     // 회원 정보 수정 성공 시 응답
     res.status(200).json({
       success: true,
-      message: '회원 정보가 성공적으로 수정되었습니다.',
-      user: updatedUser
+      message: "회원 정보가 성공적으로 수정되었습니다.",
+      user: updatedUser,
     });
   } catch (error) {
-    // 회원 정보 수정 실패 시 에러 응답
-    // res.status(400).json({
-    //   success: false,
-    //   message: '회원 정보 수정 중 오류가 발생했습니다.',
-    //   error: error.message
-    // });
     next(error);
   }
 }
@@ -104,24 +105,67 @@ async function deleteUser(req, res, next) {
     // 회원 탈퇴 성공 시 응답
     res.status(200).json({
       success: true,
-      message: '회원 탈퇴가 성공적으로 완료되었습니다.',
-      user: deletedUser
+      message: "회원 탈퇴가 성공적으로 완료되었습니다.",
+      user: deletedUser,
     });
   } catch (error) {
-    // 회원 탈퇴 실패 시 에러 응답
-    // res.status(400).json({
-    //   success: false,
-    //   message: '회원 탈퇴 중 오류가 발생했습니다.',
-    //   error: error.message
-    // });
     next(error);
   }
 }
 
+// 로그인 컨트롤러
+async function login(req, res, next) {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findByEmail(email); // 이메일로 유저 찾기
+
+    if (!user) {
+      return res.status(404).json({ message: "찾을 수 없는 회원입니다." });
+    }
+
+    // 비밀번호 검증
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ message: "유효하지 않은 접근입니다." });
+    }
+
+    // Access Token 생성
+    const accessToken = jwt.sign(
+      { userId: user._id },
+      "YOUR_ACCESS_TOKEN_SECRET",
+      { expiresIn: "15m" }
+    );
+
+    // Refresh Token 생성 및 HttpOnly 쿠키에 저장
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      "YOUR_REFRESH_TOKEN_SECRET",
+      { expiresIn: "7d" }
+    );
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true, // HTTPS를 사용하는 경우 true로 설정
+      sameSite: "strict",
+    });
+
+    res.json({ message: "로그인 되었습니다!", accessToken });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// 로그아웃 컨트롤러
+async function logout(req, res) {
+  res.clearCookie("refreshToken"); // refreshToken 쿠키 제거
+  return res.status(200).json({ message: "로그아웃 되었습니다!" });
+}
+
 module.exports = {
   signUp,
+  login,
+  logout,
   updateUserInfo,
   deleteUser,
   getAllUsers,
-  getUserById
+  getUserById,
 };

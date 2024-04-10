@@ -1,5 +1,6 @@
 const express = require("express");
 const likeController = require("../controllers/likeController");
+const postController = require("../controllers/postController");
 
 const router = express.Router();
 
@@ -8,6 +9,9 @@ router.post("/", likeController.createLike);
 
 // 모든 좋아요 조회 라우터
 router.get("/", likeController.getAllLikes);
+
+// 게시물 좋아요 토글 라우터
+router.post("/toggle", postController.toggleLikeController);
 
 // // 특정 사용자의 좋아요 조회 라우터
 // router.get("/users/:userId", likeController.getUserLikes);

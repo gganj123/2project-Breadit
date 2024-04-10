@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 const magazinePostSchema = new mongoose.Schema(
   {
-    post_id: mongoose.Schema.Types.ObjectId,
     user_id: {
       type: String,
       required: true,
@@ -20,6 +19,7 @@ const magazinePostSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    like_count: Number,
     images: String,
   },
   {
