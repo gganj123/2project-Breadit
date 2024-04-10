@@ -1,27 +1,26 @@
-const Bread = require('../db/repository/breadRepository'); // Bread 모델을 가져옵니다.
-const Review = require('../db/repository/reviewRepository'); // reviewSchema가 정의된 파일 경로
+const Bread = require("../db/repository/breadRepository"); // Bread 모델을 가져옵니다.
 // 브레드 생성 서비스
 async function createBread(breadData) {
-  try {
-    const newBread = await Bread.create(breadData);
-    return newBread;
-  } catch (error) {
-    // throw new Error('브레드 생성 중 오류가 발생했습니다.');
+  const newBread = await Bread.create(breadData);
+  if (!newBread) {
+    const error = new Error("브레드 생성 중 오류가 발생했습니다.");
     error.status = 500;
-    error.message = "브레드 생성 중 오류가 발생했습니다.";
     throw error;
   }
+  return newBread;
 }
 
 // 모든 브레드 가져오기 서비스
 async function getAllBreads() {
   try {
     const breads = await Bread.find();
+    if (!breads || breads.length === 0) {
+      const error = new Error("빵집을 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
     return breads;
   } catch (error) {
-    // throw new Error('브레드 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "브레드 조회 중 오류가 발생했습니다.";
     throw error;
   }
 }
@@ -30,59 +29,39 @@ async function getAllBreads() {
 async function getBreadById(breadId) {
   try {
     const bread = await Bread.findById(breadId);
+    if (!bread) {
+      const error = new Error("breadId에 해당하는 빵집이 없습니다.");
+      error.status = 404;
+      throw error;
+    }
     return bread;
   } catch (error) {
-    // throw new Error('브레드 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "브레드 조회 중 오류가 발생했습니다.";
     throw error;
   }
 }
 
 // 브레드 업데이트 서비스
 async function updateBread(breadId, newData) {
-  try {
-    const updatedBread = await Bread.findByIdAndUpdate(breadId, newData, { new: true });
-    return updatedBread;
-  } catch (error) {
-    // throw new Error('브레드 업데이트 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "브레드 업데이트 중 오류가 발생했습니다.";
+  const updatedBread = await Bread.findByIdAndUpdate(breadId, newData, {
+    new: true,
+  });
+  if (!updatedBread) {
+    const error = new Error("브레드 업데이트 중 오류가 발생했습니다.");
+    error.status = 404;
     throw error;
   }
+  return updatedBread;
 }
 
 // 브레드 삭제 서비스
 async function deleteBread(breadId) {
-  try {
-    const deletedBread = await Bread.findByIdAndDelete(breadId);
-    return deletedBread;
-  } catch (error) {
-    // throw new Error('브레드 삭제 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "브레드 삭제 중 오류가 발생했습니다.";
+  const deletedBread = await Bread.findByIdAndDelete(breadId);
+  if (!deletedBread) {
+    const error = new Error("breadId에 해당하는 브레드를 찾을 수 없습니다.");
+    error.status = 404;
     throw error;
   }
-}
-
-async function getCommentsForBread(breadId) {
-  try {
-    // 빵을 찾습니다.
-    const bread = await Bread.findById(breadId);
-    if (!bread) {
-      throw new Error('빵을 찾을 수 없습니다.');
-    }
-
-    // 빵의 ID를 이용하여 해당 빵에 연결된 리뷰의 댓글들을 가져옵니다.
-    const reviews = await Review.find({ post_id: breadId });
-
-    return reviews;
-  } catch (error) {
-    // throw new Error('리뷰 댓글 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "리뷰 댓글 조회 중 오류가 발생했습니다.";
-    throw error;
-  }
+  return deletedBread;
 }
 
 module.exports = {
@@ -91,5 +70,4 @@ module.exports = {
   getBreadById,
   updateBread,
   deleteBread,
-  getCommentsForBread,
 };

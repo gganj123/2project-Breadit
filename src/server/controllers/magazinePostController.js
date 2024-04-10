@@ -106,6 +106,18 @@ async function getCommentsForMagazinePost(req, res, next) {
   }
 }
 
+async function toggleLike(req, res, next) {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.id; // 현재 로그인한 사용자의 ID로 가정
+
+    const result = await likeService.toggleLike(postId, userId);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createMagazinePost,
   getAllMagazinePosts,
@@ -113,4 +125,5 @@ module.exports = {
   updateMagazinePost,
   deleteMagazinePost,
   getCommentsForMagazinePost,
+  toggleLike,
 };

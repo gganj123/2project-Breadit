@@ -10,15 +10,6 @@ async function createLike(likeData) {
   }
 }
 
-// 모든 좋아요 조회 함수
-// async function getAllLikes() {
-//   try {
-//     const likes = await Like.find();
-//     return likes;
-//   } catch (error) {
-//     throw new Error("모든 좋아요를 조회하는 중 오류가 발생했습니다.");
-//   }
-// }
 async function getAllLikes(post_id, user_id) {
   try {
     let filter = {};
@@ -35,28 +26,6 @@ async function getAllLikes(post_id, user_id) {
   }
 }
 
-// // 특정 사용자의 좋아요 조회 함수
-// async function getUserLikes(userId) {
-//   try {
-//     const userLikes = await Like.find({ user_id: userId });
-//     return userLikes;
-//   } catch (error) {
-//     throw new Error("사용자의 좋아요를 조회하는 중 오류가 발생했습니다.");
-//   }
-// }
-
-// // 특정 게시물의 좋아요 조회 함수
-// async function getPostLikes(postId) {
-//   try {
-//     const postLikes = await Like.find({ post_id: postId });
-//     return postLikes;
-//   } catch (error) {
-//     throw new Error("게시물의 좋아요를 조회하는 중 오류가 발생했습니다.");
-//   }
-// }
-
-// 좋아요 삭제 함수
-
 async function deleteLike(likeId) {
   try {
     const deletedLike = await Like.findByIdAndDelete(likeId);
@@ -72,7 +41,5 @@ async function deleteLike(likeId) {
 module.exports = {
   createLike,
   getAllLikes,
-  //   getUserLikes,
-  //   getPostLikes,
   deleteLike,
 };

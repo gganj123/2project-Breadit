@@ -1,28 +1,41 @@
-const Post = require('../db/repository/postRepository'); // Post 모델을 가져옵니다.
-const Comment = require('../db/repository/commentRepository');
+const Post = require("../db/repository/postRepository"); // Post 모델을 가져옵니다.
 
 // 포스트 생성 서비스
 async function createPost(postData) {
-  try {
-    const newPost = await Post.create(postData);
-    return newPost;
-  } catch (error) {
-    // throw new Error('포스트 생성 중 오류가 발생했습니다.');
+  const newPost = await Post.create(postData);
+  if (!newPost) {
+    const error = new Error("포스트 생성 중 오류가 발생했습니다.");
     error.status = 500;
-    error.message = "포스트 생성 중 오류가 발생했습니다.";
     throw error;
   }
+  return newPost;
 }
 
 // 모든 포스트 가져오기 서비스
-async function getAllPosts() {
+async function getAllPosts(searchQuery) {
   try {
-    const posts = await Post.find();
+    let query = {};
+
+    if (searchQuery) {
+      const regex = new RegExp(searchQuery, "i");
+
+      query = {
+        $or: [
+          { title: { $regex: regex } },
+          { content: { $regex: regex } },
+          { nickname: { $regex: regex } },
+        ],
+      };
+    }
+
+    const posts = await Post.find(query);
+    if (!posts || posts.length === 0) {
+      const error = new Error("포스트글을 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
     return posts;
   } catch (error) {
-    // throw new Error('포스트 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "포스트 조회중 오류가 발생했습니다.";
     throw error;
   }
 }
@@ -31,79 +44,49 @@ async function getAllPosts() {
 async function getPostById(postId) {
   try {
     const post = await Post.findById(postId);
+    if (!post) {
+      const error = new Error("postId에 해당하는 포스트글을 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
     return post;
   } catch (error) {
-    // throw new Error('포스트 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "포스트 조회중 오류가 발생했습니다.";
     throw error;
   }
 }
 
 // 포스트 업데이트 서비스
 async function updatePost(postId, newData) {
-  try {
-    const updatedPost = await Post.findByIdAndUpdate(postId, newData, { new: true });
-    return updatedPost;
-  } catch (error) {
-    // throw new Error('포스트 업데이트 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "포스트 업데이트중 오류가 발생했습니다.";
+  const updatedPost = await Post.findByIdAndUpdate(postId, newData, {
+    new: true,
+  });
+  if (!updatedPost) {
+    const error = new Error(
+      "postId에 해당하는 포스트를 찾을 수 없어 업데이트할 수 없습니다."
+    );
+    error.status = 404;
     throw error;
   }
+  return updatedPost;
 }
 
 // 포스트 삭제 서비스
 async function deletePost(postId) {
-  try {
-    const deletedPost = await Post.findByIdAndDelete(postId);
-    return deletedPost;
-  } catch (error) {
-    // throw new Error('포스트 삭제 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "포스트 삭제중 오류가 발생했습니다.";
+  const deletedPost = await Post.findByIdAndDelete(postId);
+  if (!deletedPost) {
+    const error = new Error(
+      "postId에 해당하는 포스트를 찾을 수 없어 삭제할 수 없습니다."
+    );
+    error.status = 404;
     throw error;
   }
+  return deletedPost;
 }
 
-
-// async function getCommentsForPost(postId) {
-//   try {
-//     const post = await Post.findById(postId).populate('comment_id');
-//     if (!post) {
-//       throw new Error('포스트를 찾을 수 없습니다.');
-//     }
-//     return post.comment_id;
-//   } catch (error) {
-//     throw new Error('댓글 조회 중 오류가 발생했습니다.');
-//   }
-// }
-
-// 포스트의 댓글 필터링 서비스
-async function getCommentsForPost(postId) {
-  try {
-    // 포스트를 찾습니다.
-    const post = await Post.findById(postId);
-    if (!post) {
-      throw new Error('포스트를 찾을 수 없습니다.');
-    }
-
-    // 포스트의 ID를 이용하여 해당 포스트에 연결된 댓글들을 가져옵니다.
-    const comments = await Comment.find({ post_id: postId });
-
-    return comments;
-  } catch (error) {
-    // throw new Error('댓글 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "댓글 조회중 오류가 발생했습니다.";
-    throw error;
-  }
-}
 module.exports = {
   createPost,
   getAllPosts,
   getPostById,
   updatePost,
   deletePost,
-  getCommentsForPost
 };

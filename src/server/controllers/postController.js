@@ -2,27 +2,36 @@ const postService = require("../service/postService");
 const postValidation = require("../validation/postValidation"); // 유효성 검사 모듈 추가
 
 // 포스트 생성 컨트롤러
+
 async function createPost(req, res, next) {
   try {
     const postData = req.body;
+    const newPost = await postService.createPost(postData);
     const validationResult = postValidation.validatePostCreateReq(postData); // 유효성 검사 수행
     if (validationResult.error) {
       throw validationResult.error;
     }
-    const newPost = await postService.createPost(validationResult.value);
     res.status(201).json(newPost);
   } catch (error) {
+    // res.status(500).json({ message: error.message });
     next(error);
   }
 }
 
-// 모든 포스트 가져오기 컨트롤러
+// 모든 포스트 가져오기 컨트롤러 (부분 검색 포함)
 async function getAllPosts(req, res, next) {
   try {
-    const posts = await postService.getAllPosts();
-    res.json(posts);
+    if (req.query.q) {
+      // 검색어가 있는 경우
+      const searchQuery = req.query.q;
+      const posts = await postService.getAllPosts(searchQuery);
+      res.json(posts);
+    } else {
+      // 검색어가 없는 경우
+      const posts = await postService.getAllPosts();
+      res.json(posts);
+    }
   } catch (error) {
-    // res.status(500).json({ message: error.message });
     next(error);
   }
 }

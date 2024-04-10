@@ -11,6 +11,9 @@ router.get("/", postController.getAllPosts);
 // GET 요청: 특정 포스트 가져오기
 router.get("/:id", postController.getPostById);
 
+// GET 요청: 모든 포스트 가져오기 (부분 검색 포함)
+router.get("/:searchQuery", postController.getAllPosts);
+
 // PUT 요청: 포스트 업데이트
 router.put("/:id", postController.updatePost);
 
@@ -18,6 +21,6 @@ router.put("/:id", postController.updatePost);
 router.delete("/:id", postController.deletePost);
 
 // GET 요청: 포스트의 댓글 필터링
-// router.get('/:id/comments', postController.getCommentsForPost);
+router.get("/:id/comments", postController.getCommentsForPost);
 
 module.exports = router;
