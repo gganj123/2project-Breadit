@@ -12,9 +12,23 @@ async function createRecipe(recipeData) {
 }
 
 // 모든 레시피 가져오기 서비스
-async function getAllRecipes() {
+async function getAllRecipes(searchQuery) {
   try {
-    const recipes = await Recipe.find();
+    let query = {};
+
+    if (searchQuery) {
+      const regex = new RegExp(searchQuery, "i");
+
+      query = {
+        $or: [
+          { title: { $regex: regex } },
+          { content: { $regex: regex } },
+          { nickname: { $regex: regex } },
+        ],
+      };
+    }
+
+    const recipes = await Recipe.find(query);
     if (!recipes || recipes.length === 0) {
       const error = new Error("레시피를 찾을 수 없습니다.");
       error.status = 404;

@@ -36,10 +36,17 @@ async function createMagazinePost(req, res, next) {
 // 모든 매거진 포스트 가져오기 컨트롤러
 async function getAllMagazinePosts(req, res, next) {
   try {
-    const posts = await magazineService.getAllMagazinePosts();
-    res.json(posts);
+    if (req.query.q) {
+      // 검색어가 있는 경우
+      const searchQuery = req.query.q;
+      const posts = await magazineService.getAllMagazinePosts(searchQuery);
+      res.json(posts);
+    } else {
+      // 검색어가 없는 경우
+      const posts = await magazineService.getAllMagazinePosts();
+      res.json(posts);
+    }
   } catch (error) {
-    // res.status(500).json({ message: error.message });
     next(error);
   }
 }

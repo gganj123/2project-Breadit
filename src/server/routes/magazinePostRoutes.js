@@ -11,6 +11,9 @@ router.get("/", magazineController.getAllMagazinePosts);
 // 특정 매거진 포스트 가져오기
 router.get("/:id", magazineController.getMagazinePostById);
 
+// GET 요청: 모든 매거진 가져오기 (부분 검색 포함)
+router.get("/:searchQuery", magazineController.getAllMagazinePosts);
+
 // 매거진 포스트 업데이트
 router.put("/:id", magazineController.updateMagazinePost);
 

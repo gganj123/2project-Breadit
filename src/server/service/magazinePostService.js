@@ -11,9 +11,23 @@ async function createMagazinePost(postData) {
 }
 
 // 모든 매거진 포스트 가져오기
-async function getAllMagazinePosts() {
+async function getAllMagazinePosts(searchQuery) {
   try {
-    const posts = await MagazinePost.find();
+    let query = {};
+
+    if (searchQuery) {
+      const regex = new RegExp(searchQuery, "i");
+
+      query = {
+        $or: [
+          { title: { $regex: regex } },
+          { content: { $regex: regex } },
+          { nickname: { $regex: regex } },
+        ],
+      };
+    }
+
+    const posts = await MagazinePost.find(query);
     if (!posts || posts.length === 0) {
       const error = new Error("매거진 글을 찾을 수 없습니다.");
       error.status = 404;
