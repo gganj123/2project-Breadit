@@ -1,19 +1,16 @@
 require("dotenv").config();
-const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
-const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
 
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const app = express();
-const errorHandler = require("../src/server/middleware/errorHandler");
+const errorHandler = require("./server/middleware/errorHandler");
+const config = require("./config/config.js");
+const { MONGO_URI, PORT } = config;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(process.cwd(), "public")));
-
-const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_DB_URI;
 
 const cors = require("cors");
 app.use(
@@ -77,5 +74,3 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`server listen ${PORT}`);
 });
-
-module.exports = app;
