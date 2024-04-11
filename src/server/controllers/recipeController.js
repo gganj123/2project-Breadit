@@ -23,10 +23,17 @@ async function createRecipe(req, res, next) {
 // 모든 레시피 가져오기 컨트롤러
 async function getAllRecipes(req, res, next) {
   try {
-    const recipes = await recipeService.getAllRecipes();
-    res.json(recipes);
+    if (req.query.q) {
+      // 검색어가 있는 경우
+      const searchQuery = req.query.q;
+      const posts = await recipeService.getAllRecipes(searchQuery);
+      res.json(posts);
+    } else {
+      // 검색어가 없는 경우
+      const posts = await recipeService.getAllRecipes();
+      res.json(posts);
+    }
   } catch (error) {
-    // res.status(500).json({ message: error.message });
     next(error);
   }
 }
