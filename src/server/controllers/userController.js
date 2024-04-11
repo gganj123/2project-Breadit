@@ -3,6 +3,8 @@ const User = require("../db/repository/userRepository");
 const UserService = require("../service/userService");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const config = require("../../config/config");
+const { accessTokenSecret, refreshTokenSecret } = config;
 
 /// 회원가입 컨트롤러
 async function signUp(req, res, next) {
@@ -37,7 +39,7 @@ async function getUserById(req, res, next) {
     const requestingUserId = req.user.userId;
 
     // ID 비교를 위한 문자열 변환 제거하고 직접 비교
-    if (!mongoose.Types.ObjectId(req.user.userId).equals(userId)) {
+    if (!new mongoose.Types.ObjectId(req.user.userId).equals(userId)) {
       return res.status(401).json({
         message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
       });
@@ -150,16 +152,12 @@ async function login(req, res, next) {
     }
 
     // ACCESS_TOKEN_SECRET과 REFRESH_TOKEN_SECRET 환경 변수 사용
-    const accessToken = jwt.sign(
-      { userId: user._id },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
-    );
-    const refreshToken = jwt.sign(
-      { userId: user._id },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "7d" }
-    );
+    const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
+      expiresIn: "7d",
+    });
 
     return res.status(200).json({
       message: "로그인 되었습니다!",
@@ -186,6 +184,7 @@ async function refreshToken(req, res) {
       .status(401)
       .json({ message: "Refresh Token이 제공되지 않았습니다." });
   }
+  console.log(process.env.ACCESS_TOKEN_SECRET);
 
   // REFRESH_TOKEN_SECRET 환경 변수 사용
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
@@ -194,11 +193,9 @@ async function refreshToken(req, res) {
     }
 
     // ACCESS_TOKEN_SECRET 환경 변수 사용
-    const accessToken = jwt.sign(
-      { userId: user._id },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
-    );
+    const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
+      expiresIn: "15m",
+    });
     res.json({ accessToken });
   });
 }
@@ -211,4 +208,5 @@ module.exports = {
   deleteUser,
   getAllUsers,
   getUserById,
+  refreshToken,
 };
