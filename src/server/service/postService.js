@@ -113,7 +113,7 @@ async function toggleLike(user_id, post_id) {
     throw error;
   }
 }
-
+//게시물의 좋아요 상태 함수
 async function getPostWithLikeStatus(post_id, user_id) {
   try {
     const postId = new ObjectId(post_id);

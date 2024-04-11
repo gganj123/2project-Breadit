@@ -117,6 +117,33 @@ async function magazineToggleLike(user_id, post_id) {
     throw error;
   }
 }
+// 게시물의 좋아요 상태 함수
+async function getMagazineWithLikeStatus(post_id, user_id) {
+  try {
+    const postId = new ObjectId(post_id);
+    const userId = new ObjectId(user_id);
+
+    const magazine = await MagazinePost.findById(postId);
+    if (!magazine) {
+      throw new Error("잡지를 찾을 수 없습니다.");
+    }
+
+    const like = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const isLikedByUser = like ? true : false;
+
+    return {
+      magazine: magazine,
+      isLikedByUser: isLikedByUser,
+    };
+  } catch (error) {
+    console.error("잡지 정보 조회 중 오류 발생:", error);
+    throw error;
+  }
+}
 module.exports = {
   createMagazinePost,
   getAllMagazinePosts,
@@ -124,4 +151,5 @@ module.exports = {
   updateMagazinePost,
   deleteMagazinePost,
   magazineToggleLike,
+  getMagazineWithLikeStatus,
 };

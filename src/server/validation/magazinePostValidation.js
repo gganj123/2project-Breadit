@@ -12,6 +12,7 @@ module.exports = {
         .required()
         .error(() => new Error("닉네임을 적어주세요.")),
       profile: Joi.string(),
+      thumbnail: Joi.string(),
       title: Joi.string()
         .required()
         .error(() => new Error("제목을 작성해주세요.")),
@@ -53,6 +54,8 @@ module.exports = {
         .error(() => new Error("닉네임을 적어주세요.")),
       profile: Joi.string(),
       title: Joi.string().error(() => new Error("제목을 작성해주세요.")),
+      thumbnail: Joi.string(),
+
       content: Joi.string()
         .required()
         .error(() => new Error("내용을 작성해주세요.")),

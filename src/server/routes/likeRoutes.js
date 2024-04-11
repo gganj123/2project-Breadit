@@ -24,6 +24,17 @@ router.post("/recipetoggle", recipeController.recipeToggleLikeController);
 // 좋아요 삭제
 router.delete("/:id", likeController.deleteLike);
 
-router.get("/like/:post_id", postController.getPostWithLikeStatusController);
+// 포스트 좋아요 상태
+router.get("/post/:post_id", postController.getPostWithLikeStatusController);
+
+router.get(
+  "/magazine/:post_id",
+  magazineController.getMagazineWithLikeStatusController
+);
+
+router.get(
+  "/recipe/:post_id",
+  recipeController.getRecipeWithLikeStatusController
+);
 
 module.exports = router;

@@ -20,7 +20,8 @@ const magazinePostSchema = new mongoose.Schema(
       required: true,
     },
     like_count: Number,
-    images: String,
+    thumbnail: String,
+    images: [String],
   },
   {
     timestamps: true,

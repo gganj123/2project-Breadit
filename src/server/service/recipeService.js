@@ -116,6 +116,34 @@ async function recipeToggleLike(user_id, post_id) {
   }
 }
 
+// 레시피의 좋아요 상태 함수
+async function getRecipeWithLikeStatus(post_id, user_id) {
+  try {
+    const postId = new ObjectId(post_id);
+    const userId = new ObjectId(user_id);
+
+    const recipe = await Recipe.findById(postId);
+    if (!recipe) {
+      throw new Error("레시피를 찾을 수 없습니다.");
+    }
+
+    const like = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const isLikedByUser = like ? true : false;
+
+    return {
+      recipe: recipe,
+      isLikedByUser: isLikedByUser,
+    };
+  } catch (error) {
+    console.error("레시피 정보 조회 중 오류 발생:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   createRecipe,
   getAllRecipes,
@@ -123,4 +151,5 @@ module.exports = {
   updateRecipe,
   deleteRecipe,
   recipeToggleLike,
+  getRecipeWithLikeStatus,
 };

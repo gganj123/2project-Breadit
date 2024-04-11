@@ -53,6 +53,7 @@ module.exports = {
         .min(2)
         .error(() => new Error("닉네임을 적어주세요.")),
       profile: Joi.string(),
+      thumbnail: Joi.string(),
       title: Joi.string()
         .min(1)
         .error(() => new Error("제목을 작성해주세요.")),

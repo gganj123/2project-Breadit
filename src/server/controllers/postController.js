@@ -83,18 +83,6 @@ async function deletePost(req, res, next) {
   }
 }
 
-// 포스트의 댓글 필터링 컨트롤러
-async function getCommentsForPost(req, res, next) {
-  try {
-    const postId = req.params.id;
-    const comments = await postService.getCommentsForPost(postId);
-    res.json(comments);
-  } catch (error) {
-    // res.status(500).json({ message: error.message });
-    next(error);
-  }
-}
-
 // 게시물 좋아요 토글 컨트롤러
 async function toggleLikeController(req, res) {
   const { user_id, post_id } = req.body;
@@ -111,6 +99,8 @@ async function toggleLikeController(req, res) {
     res.status(500).json({ error: "서버 오류" });
   }
 }
+
+//게시물 좋아요 상태 호출
 
 async function getPostWithLikeStatusController(req, res, next) {
   const { post_id } = req.params;
@@ -132,7 +122,6 @@ module.exports = {
   getPostById,
   updatePost,
   deletePost,
-  getCommentsForPost,
   toggleLikeController,
   getPostWithLikeStatusController,
 };

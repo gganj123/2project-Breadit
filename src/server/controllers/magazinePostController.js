@@ -121,6 +121,25 @@ async function magazineToggleLikeController(req, res) {
   }
 }
 
+//게시물 좋아요 상태 호출
+async function getMagazineWithLikeStatusController(req, res, next) {
+  const { post_id } = req.params;
+  // const user_id = req.user.userId; // 가정: 사용자 ID는 요청 객체의 user 속성에 저장되어 있음
+  const user_id = "661742344851999937401cfe";
+  try {
+    const magazineInfo = await magazineService.getMagazineWithLikeStatus(
+      post_id,
+      user_id
+    );
+    res.json(magazineInfo);
+  } catch (error) {
+    console.error("잡지 정보 조회 중 오류 발생:", error);
+    res
+      .status(500)
+      .json({ message: "잡지 정보를 가져오는 중 오류가 발생했습니다." });
+  }
+}
+
 module.exports = {
   createMagazinePost,
   getAllMagazinePosts,
@@ -128,4 +147,5 @@ module.exports = {
   updateMagazinePost,
   deleteMagazinePost,
   magazineToggleLikeController,
+  getMagazineWithLikeStatusController,
 };
