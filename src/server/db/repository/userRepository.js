@@ -63,13 +63,17 @@ async function create(userData) {
 //   return user;
 // }
 // 회원 정보 수정 메서드
-async function findByIdAndUpdate(userId, newUserData, options = { new: true }) {
+async function findByIdAndUpdate(
+  userId,
+  newUserData,
+  requestingUserId = { new: true }
+) {
   try {
     // UserModel.findByIdAndUpdate를 사용하여 해당 ID에 해당하는 사용자를 수정
     const updatedUser = await model.user.findByIdAndUpdate(
       userId,
       newUserData,
-      options
+      requestingUserId
     );
     if (!updatedUser) {
       throw new Error("해당 사용자를 찾을 수 없습니다.");

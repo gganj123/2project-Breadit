@@ -12,7 +12,9 @@ async function signUp(req, res, next) {
     const userData = req.body;
 
     // 이메일 중복 검사
-    const emailExists = await User.check_if_email_exists(userData.email);
+    const emailExists = await userRepository.check_if_email_exists(
+      userData.email
+    );
     if (emailExists) {
       return res.status(409).json({
         success: false,
@@ -21,7 +23,7 @@ async function signUp(req, res, next) {
     }
 
     // 유저 생성
-    const newUser = await User.create(userData);
+    const newUser = await userRepository.create(userData);
     return res.status(201).json({
       success: true,
       message: "회원가입이 성공적으로 완료되었습니다.",
@@ -53,7 +55,7 @@ async function getUserById(req, res, next) {
     res.json(user);
   } catch (error) {
     console.log(`Error retrieving user: ${error.message}`);
-    next(error);
+    throw error;
   }
 }
 
@@ -103,13 +105,10 @@ async function updateUserInfo(req, res, next) {
 // 회원 탈퇴 컨트롤러
 async function deleteUser(req, res, next) {
   try {
-    // 클라이언트로부터 받은 유저 ID (URL에서의 파라미터)
     const userId = req.params.userId;
-
-    // 인증된 유저의 ID (토큰에서 추출한 ID)
     const authenticatedUserId = req.user.userId;
 
-    // 사용자가 자신의 계정만 삭제할 수 있는지 검사
+    // 클라이언트로부터 받은 유저 ID와 인증된 유저의 ID를 비교하여 자신의 계정인지 확인
     if (userId !== authenticatedUserId) {
       return res.status(403).json({
         success: false,
@@ -117,7 +116,7 @@ async function deleteUser(req, res, next) {
       });
     }
 
-    // 권한 검증 후 회원 탈퇴 처리
+    // 회원 탈퇴 처리
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) {
       return res.status(404).json({
@@ -127,12 +126,13 @@ async function deleteUser(req, res, next) {
     }
 
     // 회원 탈퇴 성공 시 응답
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "회원 탈퇴가 성공적으로 완료되었습니다.",
       user: deletedUser,
     });
   } catch (error) {
+    // 에러 핸들링
     next(error);
   }
 }
