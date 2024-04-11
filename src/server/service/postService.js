@@ -113,6 +113,33 @@ async function toggleLike(user_id, post_id) {
     throw error;
   }
 }
+
+async function getPostWithLikeStatus(post_id, user_id) {
+  try {
+    const postId = new ObjectId(post_id);
+    const userId = new ObjectId(user_id);
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      throw new Error("게시물을 찾을 수 없습니다.");
+    }
+
+    const like = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const isLikedByUser = like ? true : false;
+
+    return {
+      post: post,
+      isLikedByUser: isLikedByUser,
+    };
+  } catch (error) {
+    console.error("게시물 정보 조회 중 오류 발생:", error);
+    throw error;
+  }
+}
 // async function toggleLike(user_id, post_id) {
 //   try {
 //     const userId = mongoose.Types.ObjectId(user_id);
@@ -149,4 +176,5 @@ module.exports = {
   updatePost,
   deletePost,
   toggleLike,
+  getPostWithLikeStatus,
 };

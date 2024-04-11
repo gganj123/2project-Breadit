@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../db/repository/userRepository");
 const UserService = require("../service/userService");
 const jwt = require("jsonwebtoken");
@@ -33,14 +34,11 @@ async function signUp(req, res, next) {
 async function getUserById(req, res, next) {
   try {
     const userId = req.params.userId;
-    const requestingUserId = req.user.userId; // 토큰에서 추출된 사용자 ID
+    const requestingUserId = req.user.userId;
 
-    // URL의 userId와 토큰에서 추출된 userId가 일치하는지 확인
-    if (userId !== requestingUserId) {
-      console.log(
-        `Requested userId: ${userId}, Authorized userId: ${requestingUserId}`
-      );
-      return res.status(403).json({
+    // ID 비교를 위한 문자열 변환 제거하고 직접 비교
+    if (!mongoose.Types.ObjectId(req.user.userId).equals(userId)) {
+      return res.status(401).json({
         message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
       });
     }
@@ -50,10 +48,10 @@ async function getUserById(req, res, next) {
       return res.status(404).json({ message: "사용자 정보가 없습니다." });
     }
 
-    res.json(user); // 사용자 정보를 반환
+    res.json(user);
   } catch (error) {
     console.log(`Error retrieving user: ${error.message}`);
-    next(error); // 오류 처리 미들웨어로 전달
+    next(error);
   }
 }
 
@@ -70,19 +68,26 @@ async function getAllUsers(req, res, next) {
 // 회원 정보 수정 컨트롤러
 async function updateUserInfo(req, res, next) {
   try {
-    // 클라이언트로부터 받은 수정할 회원 정보 데이터
-    const { userId } = req.params;
+    const userId = req.params.userId.toString(); // 문자열 변환
     const newUserData = req.body;
+    const requestingUserId = req.user.userId.toString(); // 문자열 변환
 
-    // 회원 정보 수정 함수 호출
-    const updatedUser = await User.findByIdAndUpdate(userId, newUserData, {
-      new: true,
-    });
-
-    if (!updatedUser) {
-      throw new Error("회원 정보가 존재하지 않습니다.");
+    if (!req.user.userId.equals(userId)) {
+      return res.status(403).json({
+        message: "접근 권한이 없습니다. 자신의 정보만 수정할 수 있습니다.",
+      });
     }
-    // 회원 정보 수정 성공 시 응답
+
+    if (newUserData.password) {
+      const salt = await bcrypt.genSalt(10);
+      newUserData.password = await bcrypt.hash(newUserData.password, salt);
+    }
+
+    const updatedUser = await UserService.updateUserInfo(
+      userId,
+      newUserData,
+      requestingUserId
+    );
     res.status(200).json({
       success: true,
       message: "회원 정보가 성공적으로 수정되었습니다.",
@@ -96,11 +101,28 @@ async function updateUserInfo(req, res, next) {
 // 회원 탈퇴 컨트롤러
 async function deleteUser(req, res, next) {
   try {
-    // 클라이언트로부터 받은 유저 ID
-    const { userId } = req.params;
+    // 클라이언트로부터 받은 유저 ID (URL에서의 파라미터)
+    const userId = req.params.userId;
 
-    // 회원 탈퇴 함수 호출
+    // 인증된 유저의 ID (토큰에서 추출한 ID)
+    const authenticatedUserId = req.user.userId;
+
+    // 사용자가 자신의 계정만 삭제할 수 있는지 검사
+    if (userId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        message: "자신의 계정만 삭제할 수 있습니다.",
+      });
+    }
+
+    // 권한 검증 후 회원 탈퇴 처리
     const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "회원 정보를 찾을 수 없습니다.",
+      });
+    }
 
     // 회원 탈퇴 성공 시 응답
     res.status(200).json({
@@ -117,47 +139,68 @@ async function deleteUser(req, res, next) {
 async function login(req, res, next) {
   try {
     const { email, password } = req.body;
-    const user = await User.findByEmail(email); // 이메일로 유저 찾기
-
+    const user = await User.findByEmail(email);
     if (!user) {
       return res.status(404).json({ message: "찾을 수 없는 회원입니다." });
     }
 
-    // 비밀번호 검증
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(401).json({ message: "유효하지 않은 접근입니다." });
     }
 
-    // Access Token 생성
+    // ACCESS_TOKEN_SECRET과 REFRESH_TOKEN_SECRET 환경 변수 사용
     const accessToken = jwt.sign(
       { userId: user._id },
-      "YOUR_ACCESS_TOKEN_SECRET",
+      process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
-
-    // Refresh Token 생성 및 HttpOnly 쿠키에 저장
     const refreshToken = jwt.sign(
       { userId: user._id },
-      "YOUR_REFRESH_TOKEN_SECRET",
+      process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "7d" }
     );
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true, // HTTPS를 사용하는 경우 true로 설정
-      sameSite: "strict",
-    });
 
-    res.json({ message: "로그인 되었습니다!", accessToken });
+    return res.status(200).json({
+      message: "로그인 되었습니다!",
+      accessToken,
+      refreshToken,
+    });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 }
 
 // 로그아웃 컨트롤러
 async function logout(req, res) {
-  res.clearCookie("refreshToken"); // refreshToken 쿠키 제거
-  return res.status(200).json({ message: "로그아웃 되었습니다!" });
+  return res
+    .status(200)
+    .json({ message: "로그아웃 되었습니다. 클라이언트에서 토큰 삭제 필요." });
+}
+
+// 토큰 갱신 컨트롤러
+async function refreshToken(req, res) {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res
+      .status(401)
+      .json({ message: "Refresh Token이 제공되지 않았습니다." });
+  }
+
+  // REFRESH_TOKEN_SECRET 환경 변수 사용
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+    }
+
+    // ACCESS_TOKEN_SECRET 환경 변수 사용
+    const accessToken = jwt.sign(
+      { userId: user._id },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "15m" }
+    );
+    res.json({ accessToken });
+  });
 }
 
 module.exports = {
@@ -168,4 +211,5 @@ module.exports = {
   deleteUser,
   getAllUsers,
   getUserById,
+  refreshToken,
 };

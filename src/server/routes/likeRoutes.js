@@ -24,4 +24,6 @@ router.post("/recipetoggle", recipeController.recipeToggleLikeController);
 // 좋아요 삭제
 router.delete("/:id", likeController.deleteLike);
 
+router.get("/like/:post_id", postController.getPostWithLikeStatusController);
+
 module.exports = router;

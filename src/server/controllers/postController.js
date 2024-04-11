@@ -112,6 +112,20 @@ async function toggleLikeController(req, res) {
   }
 }
 
+async function getPostWithLikeStatusController(req, res, next) {
+  const { post_id } = req.params;
+  // const user_id = req.user.userId; // 가정: 사용자 ID는 요청 객체의 user 속성에 저장되어 있음
+  const user_id = "661742344851999937401cfe";
+  try {
+    const postInfo = await postService.getPostWithLikeStatus(post_id, user_id);
+    res.json(postInfo);
+  } catch (error) {
+    console.error("게시물 정보 조회 중 오류 발생:", error);
+    res
+      .status(500)
+      .json({ message: "게시물 정보를 가져오는 중 오류가 발생했습니다." });
+  }
+}
 module.exports = {
   createPost,
   getAllPosts,
@@ -120,4 +134,5 @@ module.exports = {
   deletePost,
   getCommentsForPost,
   toggleLikeController,
+  getPostWithLikeStatusController,
 };
