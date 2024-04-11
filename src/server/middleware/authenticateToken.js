@@ -24,8 +24,12 @@ function authenticateToken(req, res, next) {
       if (err.name === "TokenExpiredError") {
         status = 401; // 만료된 토큰은 401 Unauthorized를 사용할 수 있습니다.
         message = "토큰이 만료되었습니다.";
-      } else if (err.name === "JsonWebTokenError") {
-        message = "유효하지 않은 토큰입니다.";
+        // } else if (err.name === "JsonWebTokenError") {
+        //   message = "유효하지 않은 토큰입니다.";
+      } else {
+        // 사용자 정보를 req.user에 할당
+        req.user = { userId: user.userId };
+        next();
       }
 
       return res.status(status).json({ message: message });

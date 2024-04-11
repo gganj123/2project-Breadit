@@ -24,14 +24,17 @@ async function getAllUsers() {
 // 유저 서비스 - 회원 정보 조회
 async function getUserById(userId, requestingUserId) {
   try {
-    if (userId !== requestingUserId) {
-      throw new Error("권한이 없습니다. 자신의 정보만 조회할 수 있습니다.");
-    }
-
     const user = await UserModel.findById(userId);
+
     if (!user) {
       throw new Error("해당 사용자를 찾을 수 없습니다.");
     }
+
+    // userId와 requestingUserId가 모두 문자열이 아닌 ObjectId 타입일 수 있으므로, equals 메소드를 사용해 비교
+    if (!user._id.equals(requestingUserId)) {
+      throw new Error("권한이 없습니다. 자신의 정보만 조회할 수 있습니다.");
+    }
+
     return user;
   } catch (error) {
     throw error;

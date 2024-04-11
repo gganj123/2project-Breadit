@@ -8,7 +8,7 @@ const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_DB_URI;
 
-console.log(`sddssd: ${accessTokenSecret}`);
+console.log(`토큰 가져오는지 확인: ${accessTokenSecret}`);
 
 // const envFound = dotenv.config();
 
