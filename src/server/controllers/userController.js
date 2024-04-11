@@ -10,28 +10,21 @@ async function signUp(req, res, next) {
 
     // 이메일 중복 검사
     const emailExists = await User.check_if_email_exists(userData.email);
-    // 이메일 중복 검사
-    const emailExists = await User.check_if_email_exists(userData.email);
     if (emailExists) {
       return res.status(409).json({
         success: false,
         message: "이미 사용 중인 이메일입니다.",
-        message: "이미 사용 중인 이메일입니다.",
       });
     }
 
-    // 유저 생성
     // 유저 생성
     const newUser = await User.create(userData);
     return res.status(201).json({
       success: true,
       message: "회원가입이 성공적으로 완료되었습니다.",
       user: newUser,
-      message: "회원가입이 성공적으로 완료되었습니다.",
-      user: newUser,
     });
   } catch (error) {
-    next(error);
     next(error);
   }
 }
@@ -55,10 +48,9 @@ async function getUserById(req, res, next) {
     const user = await UserService.getUserById(userId);
     if (!user) {
       return res.status(404).json({ message: "사용자 정보가 없습니다." });
-      return res.status(404).json({ message: "사용자 정보가 없습니다." });
     }
 
-    res.json(user);
+    res.json(user); // 사용자 정보를 반환
   } catch (error) {
     console.log(`Error retrieving user: ${error.message}`);
     next(error); // 오류 처리 미들웨어로 전달
@@ -78,7 +70,8 @@ async function getAllUsers(req, res, next) {
 // 회원 정보 수정 컨트롤러
 async function updateUserInfo(req, res, next) {
   try {
-    const userId = req.params.userId.toString(); // 문자열 변환
+    // 클라이언트로부터 받은 수정할 회원 정보 데이터
+    const { userId } = req.params;
     const newUserData = req.body;
 
     // 회원 정보 수정 함수 호출
@@ -94,8 +87,6 @@ async function updateUserInfo(req, res, next) {
       success: true,
       message: "회원 정보가 성공적으로 수정되었습니다.",
       user: updatedUser,
-      message: "회원 정보가 성공적으로 수정되었습니다.",
-      user: updatedUser,
     });
   } catch (error) {
     next(error);
@@ -105,34 +96,15 @@ async function updateUserInfo(req, res, next) {
 // 회원 탈퇴 컨트롤러
 async function deleteUser(req, res, next) {
   try {
-    // 클라이언트로부터 받은 유저 ID (URL에서의 파라미터)
-    const userId = req.params.userId;
+    // 클라이언트로부터 받은 유저 ID
+    const { userId } = req.params;
 
-    // 인증된 유저의 ID (토큰에서 추출한 ID)
-    const authenticatedUserId = req.user.userId;
-
-    // 사용자가 자신의 계정만 삭제할 수 있는지 검사
-    if (userId !== authenticatedUserId) {
-      return res.status(403).json({
-        success: false,
-        message: "자신의 계정만 삭제할 수 있습니다.",
-      });
-    }
-
-    // 권한 검증 후 회원 탈퇴 처리
+    // 회원 탈퇴 함수 호출
     const deletedUser = await User.findByIdAndDelete(userId);
-    if (!deletedUser) {
-      return res.status(404).json({
-        success: false,
-        message: "회원 정보를 찾을 수 없습니다.",
-      });
-    }
 
     // 회원 탈퇴 성공 시 응답
     res.status(200).json({
       success: true,
-      message: "회원 탈퇴가 성공적으로 완료되었습니다.",
-      user: deletedUser,
       message: "회원 탈퇴가 성공적으로 완료되었습니다.",
       user: deletedUser,
     });
@@ -192,11 +164,8 @@ module.exports = {
   signUp,
   login,
   logout,
-  login,
-  logout,
   updateUserInfo,
   deleteUser,
   getAllUsers,
-  getUserById,
   getUserById,
 };

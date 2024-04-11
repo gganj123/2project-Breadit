@@ -88,16 +88,20 @@ async function deleteRecipe(req, res, next) {
     next(error);
   }
 }
+// 게시물 좋아요 토글 컨트롤러
+async function recipeToggleLikeController(req, res) {
+  const { user_id, post_id } = req.body;
 
-// 레시피의 댓글 조회 컨트롤러
-async function getCommentsForRecipe(req, res, next) {
   try {
-    const recipeId = req.params.id;
-    const comments = await recipeService.getCommentsForRecipe(recipeId);
-    res.json(comments);
+    // 좋아요 토글 함수 호출
+    const updatedPost = await recipeService.recipeToggleLike(user_id, post_id);
+
+    // 클라이언트에 업데이트된 게시물 데이터 전송
+    res.json(updatedPost);
   } catch (error) {
-    // res.status(500).json({ message: error.message });
-    next(error);
+    // 에러 발생 시 에러 메시지 전송
+    console.error("좋아요 토글 중 오류 발생:", error);
+    res.status(500).json({ error: "서버 오류" });
   }
 }
 
@@ -107,5 +111,5 @@ module.exports = {
   getRecipeById,
   updateRecipe,
   deleteRecipe,
-  getCommentsForRecipe,
+  recipeToggleLikeController,
 };

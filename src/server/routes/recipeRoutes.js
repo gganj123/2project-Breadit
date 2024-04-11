@@ -20,7 +20,4 @@ router.put("/:id", recipeController.updateRecipe);
 // DELETE 요청: 포스트 삭제
 router.delete("/:id", recipeController.deleteRecipe);
 
-// GET 요청에 대한 라우터 설정: 레시피의 댓글 필터링
-// router.get('/:id/comments', recipeController.getCommentsForRecipe);
-
 module.exports = router;

@@ -1,6 +1,8 @@
 const express = require("express");
 const likeController = require("../controllers/likeController");
 const postController = require("../controllers/postController");
+const magazineController = require("../controllers/magazinePostController");
+const recipeController = require("../controllers/recipeController");
 
 const router = express.Router();
 
@@ -11,13 +13,13 @@ router.post("/", likeController.createLike);
 router.get("/", likeController.getAllLikes);
 
 // 게시물 좋아요 토글 라우터
-router.post("/toggle", postController.toggleLikeController);
+router.post("/posttoggle", postController.toggleLikeController);
 
-// // 특정 사용자의 좋아요 조회 라우터
-// router.get("/users/:userId", likeController.getUserLikes);
+// 게시물 좋아요 토글 라우터
+router.post("/magazinetoggle", magazineController.magazineToggleLikeController);
 
-// // 특정 게시물의 좋아요 조회 라우터
-// router.get("/posts/:postId", likeController.getPostLikes);
+// 게시물 좋아요 토글 라우터
+router.post("/recipetoggle", recipeController.recipeToggleLikeController);
 
 // 좋아요 삭제
 router.delete("/:id", likeController.deleteLike);

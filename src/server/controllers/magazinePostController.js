@@ -101,27 +101,23 @@ async function deleteMagazinePost(req, res, next) {
   }
 }
 
-// MagazinePost 모델의 댓글 필터링 컨트롤러
-async function getCommentsForMagazinePost(req, res, next) {
-  try {
-    const postId = req.params.id;
-    const comments = await magazineService.getCommentsForMagazinePost(postId);
-    res.json(comments);
-  } catch (error) {
-    // res.status(500).json({ message: error.message });
-    next(error);
-  }
-}
+// 게시물 좋아요 토글 컨트롤러
+async function magazineToggleLikeController(req, res) {
+  const { user_id, post_id } = req.body;
 
-async function toggleLike(req, res, next) {
   try {
-    const { postId } = req.params;
-    const userId = req.user.id; // 현재 로그인한 사용자의 ID로 가정
+    // 좋아요 토글 함수 호출
+    const updatedPost = await magazineService.magazineToggleLike(
+      user_id,
+      post_id
+    );
 
-    const result = await likeService.toggleLike(postId, userId);
-    res.json(result);
+    // 클라이언트에 업데이트된 게시물 데이터 전송
+    res.json(updatedPost);
   } catch (error) {
-    next(error);
+    // 에러 발생 시 에러 메시지 전송
+    console.error("좋아요 토글 중 오류 발생:", error);
+    res.status(500).json({ error: "서버 오류" });
   }
 }
 
@@ -131,6 +127,5 @@ module.exports = {
   getMagazinePostById,
   updateMagazinePost,
   deleteMagazinePost,
-  getCommentsForMagazinePost,
-  toggleLike,
+  magazineToggleLikeController,
 };

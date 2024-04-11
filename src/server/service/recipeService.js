@@ -1,4 +1,6 @@
 const Recipe = require("../db/repository/recipeRepository"); // Recipe 모델을 가져옵니다.
+const Like = require("../db/repository/likeRepository"); // Like 모델을 가져옵니다.
+const { ObjectId } = require("mongoose").Types;
 
 // 레시피 생성 서비스
 async function createRecipe(recipeData) {
@@ -83,10 +85,42 @@ async function deleteRecipe(recipeId) {
   return deletedRecipe;
 }
 
+// 게시물의 좋아요를 처리하는 함수
+const mongoose = require("mongoose");
+
+async function recipeToggleLike(user_id, post_id) {
+  try {
+    const userId = new ObjectId(user_id);
+    const postId = new ObjectId(post_id);
+
+    const existingLike = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    if (existingLike) {
+      await Recipe.findByIdAndUpdate(postId, {
+        $inc: { like_count: -1 },
+      });
+      await Like.findOneAndRemove({ user_id: userId, post_id: postId });
+    } else {
+      await Recipe.findByIdAndUpdate(postId, { $inc: { like_count: 1 } });
+      await Like.create({ user_id: userId, post_id: postId });
+    }
+
+    const updatedPost = await Recipe.findById(postId);
+    return updatedPost;
+  } catch (error) {
+    console.error("좋아요 토글 중 오류 발생:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   createRecipe,
   getAllRecipes,
   getRecipeById,
   updateRecipe,
   deleteRecipe,
+  recipeToggleLike,
 };
