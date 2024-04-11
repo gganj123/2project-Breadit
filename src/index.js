@@ -1,4 +1,7 @@
 require("dotenv").config();
+const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
