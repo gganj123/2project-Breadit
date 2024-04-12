@@ -12,7 +12,9 @@ module.exports = {
         .required()
         .error(() => new Error("닉네임을 적어주세요.")),
       profile: Joi.string(),
-      thumbnail: Joi.string(),
+      thumbnail: Joi.string().error(
+        () => new Error("섬네일을 올바르게 입력해주세요.")
+      ),
       title: Joi.string()
         .required()
         .error(() => new Error("제목을 작성해주세요.")),
