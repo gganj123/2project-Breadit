@@ -31,7 +31,7 @@ async function getUserById(userId, requestingUserId) {
     }
 
     // userId와 requestingUserId가 모두 문자열이 아닌 ObjectId 타입일 수 있으므로, equals 메소드를 사용해 비교
-    if (!user._id.equals(requestingUserId)) {
+    if (!user._id.equals(userId)) {
       throw new Error("권한이 없습니다. 자신의 정보만 조회할 수 있습니다.");
     }
 
