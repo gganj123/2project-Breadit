@@ -139,4 +139,5 @@ module.exports = {
   findById,
   findByIdAndUpdate,
   findByIdAndDelete,
+  getUserById,
 };

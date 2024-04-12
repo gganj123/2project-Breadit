@@ -105,21 +105,39 @@ async function recipeToggleLikeController(req, res) {
   }
 }
 
+// 레시피 좋아요 상태 호출
 async function getRecipeWithLikeStatusController(req, res, next) {
   const { post_id } = req.params;
-  // const user_id = req.user.userId; // 가정: 사용자 ID는 요청 객체의 user 속성에 저장되어 있음
-  const user_id = "661742344851999937401cfe";
+  const user_id = req.body.user_id; // 가정: 사용자 ID는 요청 객체의 user 속성에 저장되어 있음
   try {
-    const recipeInfo = await recipeService.getRecipeWithLikeStatus(
+    const postInfo = await recipeService.getRecipeWithLikeStatus(
       post_id,
       user_id
     );
-    res.json(recipeInfo);
+    res.json(postInfo);
   } catch (error) {
     console.error("레시피 정보 조회 중 오류 발생:", error);
-    res
-      .status(500)
-      .json({ message: "레시피 정보를 가져오는 중 오류가 발생했습니다." });
+    res.status(500).json({
+      message: "레시피 정보를 가져오는 중 오류가 발생했습니다.",
+    });
+  }
+}
+
+// 레시피 북마크 상태 호출
+async function getRecipeWithBookmarkStatusController(req, res, next) {
+  const { post_id } = req.params;
+  const user_id = req.body.user_id; // 가정: 사용자 ID는 요청 객체의 user 속성에 저장되어 있음
+  try {
+    const postInfo = await recipeService.getRecipeWithBookmarkStatus(
+      post_id,
+      user_id
+    );
+    res.json(postInfo);
+  } catch (error) {
+    console.error("레시피 정보 조회 중 오류 발생:", error);
+    res.status(500).json({
+      message: "레시피 정보를 가져오는 중 오류가 발생했습니다.",
+    });
   }
 }
 
@@ -131,4 +149,5 @@ module.exports = {
   deleteRecipe,
   recipeToggleLikeController,
   getRecipeWithLikeStatusController,
+  getRecipeWithBookmarkStatusController,
 };

@@ -1,5 +1,6 @@
 const Recipe = require("../db/repository/recipeRepository"); // Recipe 모델을 가져옵니다.
 const Like = require("../db/repository/likeRepository"); // Like 모델을 가져옵니다.
+const Bookmark = require("../db/repository/bookmarkRepository");
 const { ObjectId } = require("mongoose").Types;
 
 // 레시피 생성 서비스
@@ -144,6 +145,33 @@ async function getRecipeWithLikeStatus(post_id, user_id) {
   }
 }
 
+// 레시피의 북마크 상태 함수
+async function getRecipeWithBookmarkStatus(post_id, user_id) {
+  try {
+    const postId = new ObjectId(post_id);
+    const userId = new ObjectId(user_id);
+
+    const recipe = await Recipe.findById(postId);
+    if (!recipe) {
+      throw new Error("레시피를 찾을 수 없습니다.");
+    }
+
+    const bookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const isBookmarkedByUser = bookmark ? true : false;
+
+    return {
+      recipe: recipe,
+      isBookmarkedByUser: isBookmarkedByUser,
+    };
+  } catch (error) {
+    console.error("레시피 정보 조회 중 오류 발생:", error);
+    throw error;
+  }
+}
 module.exports = {
   createRecipe,
   getAllRecipes,
@@ -152,4 +180,5 @@ module.exports = {
   deleteRecipe,
   recipeToggleLike,
   getRecipeWithLikeStatus,
+  getRecipeWithBookmarkStatus,
 };
