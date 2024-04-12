@@ -85,21 +85,11 @@ async function getAllUsers(req, res, next) {
 // 회원 정보 수정 컨트롤러
 async function updateUserInfo(req, res, next) {
   try {
-    const userId = req.params.userId.toString(); // 문자열 변환
+    const userId = req.params.userId; // URL 파라미터로부터 userId 추출
     const newUserData = req.body;
-    const requestingUserId = req.user.userId.toString(); // 문자열 변환
+    const requestingUserId = req.user.userId; // JWT 토큰에서 추출한 userId
 
-    if (!req.user.userId.equals(userId)) {
-      return res.status(403).json({
-        message: "접근 권한이 없습니다. 자신의 정보만 수정할 수 있습니다.",
-      });
-    }
-
-    if (newUserData.password) {
-      const salt = await bcrypt.genSalt(10);
-      newUserData.password = await bcrypt.hash(newUserData.password, salt);
-    }
-
+    // 유저 정보 업데이트 서비스 호출
     const updatedUser = await UserService.updateUserInfo(
       userId,
       newUserData,
@@ -111,7 +101,7 @@ async function updateUserInfo(req, res, next) {
       user: updatedUser,
     });
   } catch (error) {
-    next(error);
+    res.status(error.status || 500).json({ message: error.message });
   }
 }
 
@@ -173,11 +163,13 @@ async function login(req, res, next) {
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
     });
+    const decodedAccessToken = jwt.verify(accessToken, accessTokenSecret);
 
     return res.status(200).json({
       message: "로그인 되었습니다!",
       accessToken,
       refreshToken,
+      decodedAccessToken,
     });
   } catch (error) {
     return next(error);
