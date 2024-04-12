@@ -38,24 +38,42 @@ async function signUp(req, res, next) {
 async function getUserById(req, res, next) {
   try {
     const userId = req.params.userId;
-    const requestingUserId = req.user.userId;
+    console.log(`지정 유저 아이디: ${userId}, 타입: ${typeof userId}`);
 
-    // ID 비교를 위한 문자열 변환 제거하고 직접 비교
-    if (!new mongoose.Types.ObjectId(req.user.userId).equals(userId)) {
-      return res.status(401).json({
-        message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
-      });
+    // 토큰에서 사용자 ID를 디코딩합니다.
+    const token = req.headers.authorization?.split(" ")[1]; // Bearer 토큰을 가정합니다.
+    if (!token) {
+      return res.status(401).json({ message: "토큰이 제공되지 않았습니다." });
     }
 
-    const user = await UserService.getUserById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "사용자 정보가 없습니다." });
-    }
+    jwt.verify(token, accessTokenSecret, async (err, decoded) => {
+      if (err) {
+        console.log(`JWT Verification Error: ${err.name} - ${err.message}`);
+        return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+      }
 
-    res.json(user);
+      const requestingUserId = decoded.userId.toString(); // 디코딩된 사용자 ID를 문자열로 변환
+      console.log(
+        `요청된 유저 아이디: ${requestingUserId}, 타입: ${typeof requestingUserId}`
+      );
+
+      // 여기에서는 디코딩된 사용자 ID와 요청의 사용자 ID를 비교합니다.
+      if (requestingUserId !== userId.toString()) {
+        return res.status(403).json({
+          message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
+        });
+      }
+
+      const user = await UserService.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "사용자 정보가 없습니다." });
+      }
+
+      res.json(user);
+    });
   } catch (error) {
     console.log(`Error retrieving user: ${error.message}`);
-    throw error;
+    next(error);
   }
 }
 
@@ -184,18 +202,23 @@ async function refreshToken(req, res) {
       .status(401)
       .json({ message: "Refresh Token이 제공되지 않았습니다." });
   }
-  console.log(process.env.ACCESS_TOKEN_SECRET);
+  console.log(accessTokenSecret);
 
   // REFRESH_TOKEN_SECRET 환경 변수 사용
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+  jwt.verify(refreshToken, refreshTokenSecret, (err, user) => {
     if (err) {
       return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
     }
 
     // ACCESS_TOKEN_SECRET 환경 변수 사용
-    const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "15m",
-    });
+    const accessToken = jwt.sign(
+      { userId: user._id.toString() },
+      accessTokenSecret,
+      {
+        expiresIn: "15m",
+      }
+    );
+
     res.json({ accessToken });
   });
 }
