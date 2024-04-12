@@ -44,7 +44,8 @@ async function getUserById(userId, requestingUserId) {
 // 유저 서비스 - 회원 정보 수정
 async function updateUserInfo(userId, newUserData, requestingUserId) {
   try {
-    if (userId !== requestingUserId) {
+    if (!user._id.equals(userId)) {
+      // 여기도 변경해봄
       throw new Error("권한이 없습니다. 자신의 정보만 수정할 수 있습니다.");
     }
 
