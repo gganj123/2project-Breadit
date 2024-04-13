@@ -3,6 +3,8 @@ const User = require("../db/repository/userRepository");
 const UserService = require("../service/userService");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const config = require("../../config/config");
+const { accessTokenSecret, refreshTokenSecret } = config;
 
 /// 회원가입 컨트롤러
 async function signUp(req, res, next) {
@@ -34,11 +36,23 @@ async function signUp(req, res, next) {
 async function getUserById(req, res, next) {
   try {
     const userId = req.params.userId;
-    const requestingUserId = req.user.userId;
+    console.log(`지정 유저 아이디: ${userId}, 타입: ${typeof userId}`);
 
-    // ID 비교를 위한 문자열 변환 제거하고 직접 비교
-    if (!mongoose.Types.ObjectId(req.user.userId).equals(userId)) {
-      return res.status(401).json({
+    // 토큰에서 사용자 ID를 디코딩합니다.
+    const token = req.headers.authorization?.split(" ")[1]; // Bearer 토큰을 가정합니다.
+    if (!token) {
+      return res.status(401).json({ message: "토큰이 제공되지 않았습니다." });
+    }
+
+    const decoded = jwt.verify(token, accessTokenSecret);
+    const requestingUserId = decoded.userId; // 디코딩된 사용자 ID
+    console.log(
+      `요청된 유저 아이디: ${requestingUserId}, 타입: ${typeof requestingUserId}`
+    );
+
+    // 여기에서는 디코딩된 사용자 ID와 요청의 사용자 ID를 비교합니다.
+    if (requestingUserId !== userId) {
+      return res.status(403).json({
         message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
       });
     }
@@ -50,6 +64,9 @@ async function getUserById(req, res, next) {
 
     res.json(user);
   } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+    }
     console.log(`Error retrieving user: ${error.message}`);
     next(error);
   }
@@ -68,21 +85,11 @@ async function getAllUsers(req, res, next) {
 // 회원 정보 수정 컨트롤러
 async function updateUserInfo(req, res, next) {
   try {
-    const userId = req.params.userId.toString(); // 문자열 변환
+    const userId = req.params.userId; // URL 파라미터로부터 userId 추출
     const newUserData = req.body;
-    const requestingUserId = req.user.userId.toString(); // 문자열 변환
+    const requestingUserId = req.user.userId; // JWT 토큰에서 추출한 userId
 
-    if (!req.user.userId.equals(userId)) {
-      return res.status(403).json({
-        message: "접근 권한이 없습니다. 자신의 정보만 수정할 수 있습니다.",
-      });
-    }
-
-    if (newUserData.password) {
-      const salt = await bcrypt.genSalt(10);
-      newUserData.password = await bcrypt.hash(newUserData.password, salt);
-    }
-
+    // 유저 정보 업데이트 서비스 호출
     const updatedUser = await UserService.updateUserInfo(
       userId,
       newUserData,
@@ -94,7 +101,7 @@ async function updateUserInfo(req, res, next) {
       user: updatedUser,
     });
   } catch (error) {
-    next(error);
+    res.status(error.status || 500).json({ message: error.message });
   }
 }
 
@@ -150,21 +157,19 @@ async function login(req, res, next) {
     }
 
     // ACCESS_TOKEN_SECRET과 REFRESH_TOKEN_SECRET 환경 변수 사용
-    const accessToken = jwt.sign(
-      { userId: user._id },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
-    );
-    const refreshToken = jwt.sign(
-      { userId: user._id },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "7d" }
-    );
+    const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
+      expiresIn: "7d",
+    });
+    const decodedAccessToken = jwt.verify(accessToken, accessTokenSecret);
 
     return res.status(200).json({
       message: "로그인 되었습니다!",
       accessToken,
       refreshToken,
+      decodedAccessToken,
     });
   } catch (error) {
     return next(error);
@@ -186,19 +191,23 @@ async function refreshToken(req, res) {
       .status(401)
       .json({ message: "Refresh Token이 제공되지 않았습니다." });
   }
+  console.log(accessTokenSecret);
 
   // REFRESH_TOKEN_SECRET 환경 변수 사용
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+  jwt.verify(refreshToken, refreshTokenSecret, (err, user) => {
     if (err) {
       return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
     }
 
     // ACCESS_TOKEN_SECRET 환경 변수 사용
     const accessToken = jwt.sign(
-      { userId: user._id },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
+      { userId: user._id.toString() },
+      accessTokenSecret,
+      {
+        expiresIn: "15m",
+      }
     );
+
     res.json({ accessToken });
   });
 }

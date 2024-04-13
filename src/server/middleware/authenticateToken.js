@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -13,12 +14,25 @@ function authenticateToken(req, res, next) {
     return res.status(401).json({ message: "토큰이 형식에 맞지 않습니다." });
   }
 
-  jwt.verify(token, "YOUR_SECRET_KEY", (err, user) => {
+  // .env 파일에 저장된 비밀 키 사용
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) {
       console.log(`JWT Verification Error: ${err.name} - ${err.message}`);
-      return res
-        .status(403)
-        .json({ message: err.message || "인증 오류입니다." });
+      let status = 403; // 기본값
+      let message = err.message || "인증 오류입니다.";
+
+      if (err.name === "TokenExpiredError") {
+        status = 401; // 만료된 토큰은 401 Unauthorized를 사용할 수 있습니다.
+        message = "토큰이 만료되었습니다.";
+        // } else if (err.name === "JsonWebTokenError") {
+        //   message = "유효하지 않은 토큰입니다.";
+      } else {
+        // 사용자 정보를 req.user에 할당
+        req.user = { userId: user.userId };
+        next();
+      }
+
+      return res.status(status).json({ message: message });
     }
     req.user = user;
     next();
