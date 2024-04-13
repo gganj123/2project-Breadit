@@ -16,6 +16,8 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_DB_URI;
 
 const cors = require("cors");
+const axios = require("axios");
+
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://place.map.kakao.com"],
