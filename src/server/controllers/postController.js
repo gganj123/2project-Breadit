@@ -18,19 +18,13 @@ async function createPost(req, res, next) {
   }
 }
 
-// 모든 포스트 가져오기 컨트롤러 (부분 검색 포함)
 async function getAllPosts(req, res, next) {
   try {
-    if (req.query.q) {
-      // 검색어가 있는 경우
-      const searchQuery = req.query.q;
-      const posts = await postService.getAllPosts(searchQuery);
-      res.json(posts);
-    } else {
-      // 검색어가 없는 경우
-      const posts = await postService.getAllPosts();
-      res.json(posts);
-    }
+    let limit = req.query.limit ? parseInt(req.query.limit) : null;
+    let searchQuery = req.query.q || null;
+
+    const posts = await postService.getAllPosts(searchQuery, limit);
+    res.json(posts);
   } catch (error) {
     next(error);
   }

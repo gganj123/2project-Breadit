@@ -21,6 +21,10 @@ const recipeSchema = new mongoose.Schema(
     }, // 작성된 내용
     images: [String],
     like_count: Number,
+    belike: {
+      type: Boolean,
+      default: false, // 기본값은 false로 설정합니다.
+    },
     thumbnail: String,
   },
   {

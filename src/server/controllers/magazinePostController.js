@@ -1,5 +1,7 @@
 const magazineService = require("../service/magazinePostService");
 const magazineValidator = require("../validation/magazinePostValidation");
+const Like = require("../db/repository/likeRepository");
+const MagazinePost = require("../db/repository/magazinePostRepository");
 
 async function createMagazinePost(req, res, next) {
   try {
@@ -34,36 +36,78 @@ async function createMagazinePost(req, res, next) {
 // }
 
 // 모든 매거진 포스트 가져오기 컨트롤러
+// async function getAllMagazinePosts(req, res, next) {
+//   try {
+//     if (req.query.q) {
+//       // 검색어가 있는 경우
+//       const searchQuery = req.query.q;
+//       const posts = await magazineService.getAllMagazinePosts(searchQuery);
+//       res.json(posts);
+//     } else {
+//       // 검색어가 없는 경우
+//       const posts = await magazineService.getAllMagazinePosts();
+//       res.json(posts);
+//     }
+//   } catch (error) {
+//     next(error);
+//   }
+// }
 async function getAllMagazinePosts(req, res, next) {
   try {
-    if (req.query.q) {
-      // 검색어가 있는 경우
-      const searchQuery = req.query.q;
-      const posts = await magazineService.getAllMagazinePosts(searchQuery);
-      res.json(posts);
-    } else {
-      // 검색어가 없는 경우
-      const posts = await magazineService.getAllMagazinePosts();
-      res.json(posts);
-    }
+    let limit = req.query.limit ? parseInt(req.query.limit) : null;
+    let searchQuery = req.query.q || null;
+
+    const posts = await magazineService.getAllMagazinePosts(searchQuery, limit);
+    res.json(posts);
   } catch (error) {
     next(error);
   }
 }
 
 // 특정 매거진 포스트 가져오기 컨트롤러
+// async function getMagazinePostById(req, res, next) {
+//   try {
+//     const postId = req.params.id;
+//     const post = await magazineService.getMagazinePostById(postId);
+//     if (!post) {
+//       res.status(404).json({ message: "매거진 포스트를 찾을 수 없습니다." });
+//       return;
+//     }
+//     res.json(post);
+//   } catch (error) {
+//     // res.status(500).json({ message: error.message });
+//     next(error);
+//   }
+// }
+
+// 특정 매거진 포스트 가져오기 컨트롤러
 async function getMagazinePostById(req, res, next) {
+  const postId = req.params.id; // 요청에서 postId 파라미터 추출
+
   try {
-    const postId = req.params.id;
-    const post = await magazineService.getMagazinePostById(postId);
+    // 매거진 포스트를 데이터베이스에서 조회합니다.
+    const post = await MagazinePost.findById(postId);
+
+    // 매거진 포스트가 존재하지 않는 경우 404 에러를 발생시킵니다.
     if (!post) {
-      res.status(404).json({ message: "매거진 포스트를 찾을 수 없습니다." });
-      return;
+      const error = new Error(
+        "postId에 해당하는 매거진 글을 찾을 수 없습니다."
+      );
+      error.status = 404;
+      throw error;
     }
-    res.json(post);
+
+    // 좋아요 상태를 확인합니다.
+    const like = await Like.findOne({
+      user_id: "66168a5aa1a254d865677a6e",
+      post_id: postId,
+    });
+    const beLike = like ? true : false;
+
+    // 매거진 포스트와 좋아요 상태를 응답으로 반환합니다.
+    res.json({ post, beLike });
   } catch (error) {
-    // res.status(500).json({ message: error.message });
-    next(error);
+    next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
 

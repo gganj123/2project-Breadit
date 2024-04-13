@@ -16,7 +16,7 @@ async function createMagazinePost(postData) {
 }
 
 // 모든 매거진 포스트 가져오기
-async function getAllMagazinePosts(searchQuery) {
+async function getAllMagazinePosts(searchQuery, limit) {
   try {
     let query = {};
 
@@ -32,7 +32,7 @@ async function getAllMagazinePosts(searchQuery) {
       };
     }
 
-    const posts = await MagazinePost.find(query);
+    const posts = await MagazinePost.find(query).limit(limit);
     if (!posts || posts.length === 0) {
       const error = new Error("매거진 글을 찾을 수 없습니다.");
       error.status = 404;
@@ -55,7 +55,15 @@ async function getMagazinePostById(postId) {
       error.status = 404;
       throw error;
     }
-    return post;
+
+    const like = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const beLike = like ? true : false;
+
+    return { post, beLike };
   } catch (error) {
     throw error;
   }
@@ -145,6 +153,7 @@ async function getMagazinePostWithLikeStatus(post_id, user_id) {
     throw error;
   }
 }
+
 // 매거진의 북마크 상태 함수
 async function getMagazinePostWithBookmarkStatus(post_id, user_id) {
   try {

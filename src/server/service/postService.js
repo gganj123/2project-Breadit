@@ -16,7 +16,8 @@ async function createPost(postData) {
 }
 
 // 모든 포스트 가져오기 서비스
-async function getAllPosts(searchQuery) {
+async function getAllPosts(searchQuery, limit) {
+  // limit 매개변수 추가
   try {
     let query = {};
 
@@ -26,15 +27,15 @@ async function getAllPosts(searchQuery) {
       query = {
         $or: [
           { title: { $regex: regex } },
-          { content: { $regex: regex } },
-          { nickname: { $regex: regex } },
+          { ingredients: { $regex: regex } },
+          { chef: { $regex: regex } },
         ],
       };
     }
 
-    const posts = await Post.find(query);
+    const posts = await Post.find(query).limit(limit); // limit 매개변수 사용
     if (!posts || posts.length === 0) {
-      const error = new Error("포스트글을 찾을 수 없습니다.");
+      const error = new Error("포스트를 찾을 수 없습니다.");
       error.status = 404;
       throw error;
     }

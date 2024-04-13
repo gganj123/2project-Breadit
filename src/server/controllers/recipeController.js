@@ -20,20 +20,24 @@ async function createRecipe(req, res, next) {
   }
 }
 
-// 모든 레시피 가져오기 컨트롤러
+// 모든 레시피를 가져오는 컨트롤러
 async function getAllRecipes(req, res, next) {
   try {
-    if (req.query.q) {
-      // 검색어가 있는 경우
-      const searchQuery = req.query.q;
-      const posts = await recipeService.getAllRecipes(searchQuery);
-      res.json(posts);
-    } else {
-      // 검색어가 없는 경우
-      const posts = await recipeService.getAllRecipes();
-      res.json(posts);
-    }
+    let searchQuery = req.query.q || null;
+    let limit = req.query.limit ? parseInt(req.query.limit) : null;
+    let sortBy = req.query.sort || null;
+
+    // 레시피 서비스를 통해 레시피를 가져옵니다.
+    const recipes = await recipeService.getAllRecipes(
+      searchQuery,
+      limit,
+      sortBy
+    );
+
+    // 클라이언트에게 레시피를 반환합니다.
+    res.json(recipes);
   } catch (error) {
+    // 오류가 발생한 경우 오류를 처리합니다.s
     next(error);
   }
 }

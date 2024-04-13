@@ -14,8 +14,8 @@ async function createRecipe(recipeData) {
   return newRecipe;
 }
 
-// 모든 레시피 가져오기 서비스
-async function getAllRecipes(searchQuery) {
+async function getAllRecipes(searchQuery, limit, sortBy) {
+  // limit와 sortBy 매개변수 추가
   try {
     let query = {};
 
@@ -25,13 +25,21 @@ async function getAllRecipes(searchQuery) {
       query = {
         $or: [
           { title: { $regex: regex } },
-          { content: { $regex: regex } },
-          { nickname: { $regex: regex } },
+          { ingredients: { $regex: regex } },
+          { chef: { $regex: regex } },
         ],
       };
     }
 
-    const recipes = await Recipe.find(query);
+    let sortOptions = {}; // 정렬 옵션을 저장할 객체를 초기화합니다.
+    if (sortBy === "like_count") {
+      sortOptions = { like_count: -1 }; // like_count가 높은 순으로 정렬합니다.
+    }
+
+    const recipes = await Recipe.find(query)
+      .sort(sortOptions) // 정렬 옵션을 적용합니다.
+      .limit(limit); // limit 매개변수 사용
+
     if (!recipes || recipes.length === 0) {
       const error = new Error("레시피를 찾을 수 없습니다.");
       error.status = 404;
@@ -42,7 +50,6 @@ async function getAllRecipes(searchQuery) {
     throw error;
   }
 }
-
 // 특정 레시피 가져오기 서비스
 async function getRecipeById(recipeId) {
   try {
