@@ -5,10 +5,9 @@ const model = require("../schema");
 // 회원 정보 조회 메서드
 async function getUserById(userId) {
   try {
-    const userInfo = await User.findById(userId);
+    const userInfo = await model.user.findById(userId);
     return userInfo;
   } catch (error) {
-    // console.log(error)
     throw new Error("회원 정보 조회 중 오류가 발생했습니다.");
   }
 }
@@ -56,34 +55,29 @@ async function create(userData) {
   }
 }
 
-// // 회원가입 메서드
-// async function join(user_data) {
-//   const user = new model.user(user_data);
-//   await user.save();
-//   return user;
-// }
 // 회원 정보 수정 메서드
-async function findByIdAndUpdate(
-  userId,
-  newUserData,
-  requestingUserId = { new: true }
-) {
+async function findByIdAndUpdate(userId, newUserData, requestingUserId) {
   try {
-    // UserModel.findByIdAndUpdate를 사용하여 해당 ID에 해당하는 사용자를 수정
+    if (userId !== requestingUserId) {
+      throw new Error("권한이 없습니다. 자신의 정보만 수정할 수 있습니다.");
+    }
+
     const updatedUser = await model.user.findByIdAndUpdate(
       userId,
       newUserData,
-      requestingUserId
+      {
+        new: true,
+      }
     );
     if (!updatedUser) {
       throw new Error("해당 사용자를 찾을 수 없습니다.");
     }
     return updatedUser;
   } catch (error) {
-    console.error("회원 정보 수정 중 오류:", error);
     throw new Error("회원 정보 수정 중 오류가 발생했습니다.");
   }
 }
+
 // 회원 정보 수정 메서드
 async function update_user(user_id, new_data) {
   const updated_user = await model.user.findByIdAndUpdate(user_id, new_data, {
@@ -93,9 +87,9 @@ async function update_user(user_id, new_data) {
 }
 
 // 회원 탈퇴 메서드
-async function findByIdAndDelete(user_id) {
-  const deleted_user = await model.user.findByIdAndDelete(user_id);
-  return deleted_user;
+async function findByIdAndDelete(userId) {
+  const deletedUser = await model.user.findByIdAndDelete(userId);
+  return deletedUser;
 }
 
 //회원 정보 조회 메서드

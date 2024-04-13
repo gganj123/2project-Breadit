@@ -12,9 +12,7 @@ async function signUp(req, res, next) {
     const userData = req.body;
 
     // 이메일 중복 검사
-    const emailExists = await userRepository.check_if_email_exists(
-      userData.email
-    );
+    const emailExists = await User.check_if_email_exists(userData.email);
     if (emailExists) {
       return res.status(409).json({
         success: false,
@@ -23,7 +21,7 @@ async function signUp(req, res, next) {
     }
 
     // 유저 생성
-    const newUser = await userRepository.create(userData);
+    const newUser = await User.create(userData);
     return res.status(201).json({
       success: true,
       message: "회원가입이 성공적으로 완료되었습니다.",
@@ -46,32 +44,29 @@ async function getUserById(req, res, next) {
       return res.status(401).json({ message: "토큰이 제공되지 않았습니다." });
     }
 
-    jwt.verify(token, accessTokenSecret, async (err, decoded) => {
-      if (err) {
-        console.log(`JWT Verification Error: ${err.name} - ${err.message}`);
-        return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
-      }
+    const decoded = jwt.verify(token, accessTokenSecret);
+    const requestingUserId = decoded.userId; // 디코딩된 사용자 ID
+    console.log(
+      `요청된 유저 아이디: ${requestingUserId}, 타입: ${typeof requestingUserId}`
+    );
 
-      const requestingUserId = decoded.userId.toString(); // 디코딩된 사용자 ID를 문자열로 변환
-      console.log(
-        `요청된 유저 아이디: ${requestingUserId}, 타입: ${typeof requestingUserId}`
-      );
+    // 여기에서는 디코딩된 사용자 ID와 요청의 사용자 ID를 비교합니다.
+    if (requestingUserId !== userId) {
+      return res.status(403).json({
+        message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
+      });
+    }
 
-      // 여기에서는 디코딩된 사용자 ID와 요청의 사용자 ID를 비교합니다.
-      if (requestingUserId !== userId.toString()) {
-        return res.status(403).json({
-          message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
-        });
-      }
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "사용자 정보가 없습니다." });
+    }
 
-      const user = await UserService.getUserById(userId);
-      if (!user) {
-        return res.status(404).json({ message: "사용자 정보가 없습니다." });
-      }
-
-      res.json(user);
-    });
+    res.json(user);
   } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+    }
     console.log(`Error retrieving user: ${error.message}`);
     next(error);
   }
@@ -123,10 +118,13 @@ async function updateUserInfo(req, res, next) {
 // 회원 탈퇴 컨트롤러
 async function deleteUser(req, res, next) {
   try {
+    // 클라이언트로부터 받은 유저 ID (URL에서의 파라미터)
     const userId = req.params.userId;
+
+    // 인증된 유저의 ID (토큰에서 추출한 ID)
     const authenticatedUserId = req.user.userId;
 
-    // 클라이언트로부터 받은 유저 ID와 인증된 유저의 ID를 비교하여 자신의 계정인지 확인
+    // 사용자가 자신의 계정만 삭제할 수 있는지 검사
     if (userId !== authenticatedUserId) {
       return res.status(403).json({
         success: false,
@@ -134,7 +132,7 @@ async function deleteUser(req, res, next) {
       });
     }
 
-    // 회원 탈퇴 처리
+    // 권한 검증 후 회원 탈퇴 처리
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) {
       return res.status(404).json({
@@ -144,13 +142,12 @@ async function deleteUser(req, res, next) {
     }
 
     // 회원 탈퇴 성공 시 응답
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "회원 탈퇴가 성공적으로 완료되었습니다.",
       user: deletedUser,
     });
   } catch (error) {
-    // 에러 핸들링
     next(error);
   }
 }
