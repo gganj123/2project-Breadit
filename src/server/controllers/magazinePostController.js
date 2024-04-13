@@ -1,86 +1,169 @@
-const magazineService = require('../service/magazinePostService');
+const magazineService = require("../service/magazinePostService");
+const magazineValidator = require("../validation/magazinePostValidation");
 
-// 매거진 포스트 생성 컨트롤러
 async function createMagazinePost(req, res, next) {
-    try {
-        const postData = req.body;
-        const newPost = await magazineService.createMagazinePost(postData);
-        res.status(201).json(newPost);
-    } catch (error) {
-        // res.status(500).json({ message: error.message });
-        next(error);
-      }
+  try {
+    const validationResult = magazineValidator.validateMagazinePostCreateReq(
+      req.body
+    );
+    if (validationResult.error) {
+      throw validationResult.error;
+    }
+
+    const transformedData = validationResult.value;
+
+    const newMagazinePost = await magazineService.createMagazinePost(
+      transformedData
+    );
+
+    res.status(201).json(newMagazinePost);
+  } catch (error) {
+    next(error);
+  }
 }
+// 매거진 포스트 생성 컨트롤러
+// async function createMagazinePost(req, res, next) {
+//     try {
+//         const postData = req.body;
+//         const newPost = await magazineService.createMagazinePost(postData);
+//         res.status(201).json(newPost);
+//     } catch (error) {
+//         // res.status(500).json({ message: error.message });
+//         next(error);
+//       }
+// }
 
 // 모든 매거진 포스트 가져오기 컨트롤러
 async function getAllMagazinePosts(req, res, next) {
-    try {
-        const posts = await magazineService.getAllMagazinePosts();
-        res.json(posts);
-    } catch (error) {
-        // res.status(500).json({ message: error.message });
-        next(error);
+  try {
+    if (req.query.q) {
+      // 검색어가 있는 경우
+      const searchQuery = req.query.q;
+      const posts = await magazineService.getAllMagazinePosts(searchQuery);
+      res.json(posts);
+    } else {
+      // 검색어가 없는 경우
+      const posts = await magazineService.getAllMagazinePosts();
+      res.json(posts);
     }
+  } catch (error) {
+    next(error);
+  }
 }
 
 // 특정 매거진 포스트 가져오기 컨트롤러
 async function getMagazinePostById(req, res, next) {
-    try {
-        const postId = req.params.id;
-        const post = await magazineService.getMagazinePostById(postId);
-        if (!post) {
-            res.status(404).json({ message: '매거진 포스트를 찾을 수 없습니다.' });
-            return;
-        }
-        res.json(post);
-    } catch (error) {
-        // res.status(500).json({ message: error.message });
-        next(error);
+  try {
+    const postId = req.params.id;
+    const post = await magazineService.getMagazinePostById(postId);
+    if (!post) {
+      res.status(404).json({ message: "매거진 포스트를 찾을 수 없습니다." });
+      return;
     }
+    res.json(post);
+  } catch (error) {
+    // res.status(500).json({ message: error.message });
+    next(error);
+  }
 }
 
 // 매거진 포스트 업데이트 컨트롤러
 async function updateMagazinePost(req, res, next) {
-    try {
-        const postId = req.params.id;
-        const newData = req.body;
-        const updatedPost = await magazineService.updateMagazinePost(postId, newData);
-        res.json(updatedPost);
-    } catch (error) {
-        // res.status(500).json({ message: error.message });
-        next(error);
+  try {
+    const validationResult = magazineValidator.validateMagazinePostCreateReq(
+      req.body
+    );
+    if (validationResult.error) {
+      throw validationResult.error;
     }
+
+    const postId = req.params.id;
+    const newData = validationResult.value;
+    const updatedPost = await magazineService.updateMagazinePost(
+      postId,
+      newData
+    );
+    res.json(updatedPost);
+  } catch (error) {
+    next(error);
+  }
 }
 
 // 매거진 포스트 삭제 컨트롤러
 async function deleteMagazinePost(req, res, next) {
-    try {
-        const postId = req.params.id;
-        const deletedPost = await magazineService.deleteMagazinePost(postId);
-        res.json(deletedPost);
-    } catch (error) {
-        // res.status(500).json({ message: error.message });
-        next(error);
-    }
+  try {
+    const postId = req.params.id;
+    const deletedPost = await magazineService.deleteMagazinePost(postId);
+    res.json(deletedPost);
+  } catch (error) {
+    // res.status(500).json({ message: error.message });
+    next(error);
+  }
 }
 
-// MagazinePost 모델의 댓글 필터링 컨트롤러
-async function getCommentsForMagazinePost(req, res, next) {
-    try {
-        const postId = req.params.id;
-        const comments = await magazineService.getCommentsForMagazinePost(postId);
-        res.json(comments);
-    } catch (error) {
-        // res.status(500).json({ message: error.message });
-        next(error);
-    }
+// 게시물 좋아요 토글 컨트롤러
+async function magazineToggleLikeController(req, res) {
+  const { user_id, post_id } = req.body;
+
+  try {
+    // 좋아요 토글 함수 호출
+    const updatedPost = await magazineService.magazineToggleLike(
+      user_id,
+      post_id
+    );
+
+    // 클라이언트에 업데이트된 게시물 데이터 전송
+    res.json(updatedPost);
+  } catch (error) {
+    // 에러 발생 시 에러 메시지 전송
+    console.error("좋아요 토글 중 오류 발생:", error);
+    res.status(500).json({ error: "서버 오류" });
+  }
+}
+
+//게시물 좋아요 상태 호출
+async function getMagazinePostWithLikeStatusController(req, res, next) {
+  const { post_id } = req.params;
+  const user_id = req.body.user_id; // 가정: 사용자 ID는 요청 객체의 user 속성에 저장되어 있음
+  try {
+    const postInfo = await magazineService.getMagazinePostWithLikeStatus(
+      post_id,
+      user_id
+    );
+    res.json(postInfo);
+  } catch (error) {
+    console.error("매거진 포스트 정보 조회 중 오류 발생:", error);
+    res.status(500).json({
+      message: "매거진 포스트 정보를 가져오는 중 오류가 발생했습니다.",
+    });
+  }
+}
+
+// 매거진 포스트의 북마크 상태 호출
+async function getMagazinePostWithBookmarkStatusController(req, res, next) {
+  const { post_id } = req.params;
+  const user_id = req.body.user_id; // 가정: 사용자 ID는 요청 객체의 user 속성에 저장되어 있음
+  try {
+    const postInfo = await magazineService.getMagazinePostWithBookmarkStatus(
+      post_id,
+      user_id
+    );
+    res.json(postInfo);
+  } catch (error) {
+    console.error("매거진 포스트 정보 조회 중 오류 발생:", error);
+    res.status(500).json({
+      message: "매거진 포스트 정보를 가져오는 중 오류가 발생했습니다.",
+    });
+  }
 }
 
 module.exports = {
-    createMagazinePost,
-    getAllMagazinePosts,
-    getMagazinePostById,
-    updateMagazinePost,
-    deleteMagazinePost,
-    getCommentsForMagazinePost
+  createMagazinePost,
+  getAllMagazinePosts,
+  getMagazinePostById,
+  updateMagazinePost,
+  deleteMagazinePost,
+  magazineToggleLikeController,
+  getMagazinePostWithLikeStatusController,
+  getMagazinePostWithBookmarkStatusController,
 };

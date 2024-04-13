@@ -1,25 +1,32 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const magazinePostSchema = new mongoose.Schema(
   {
-    post_id: mongoose.Schema.Types.ObjectId,
-    user_id: String,
-    title: String,
-    content: String,
-    images: { 
-      type: [String],
-      validate: {
-        validator: val => val.length <= 5,
-        message: '{PATH} exceeds the limit of 5'
-      }
-    }, // 첨부된 이미지 ( 최대 5개 )
-    bread_id: String, // 지도 API 정보
-    instagram_info: String, // 인스타 API 정보
+    user_id: {
+      type: String,
+      required: true,
+    },
+    nickname: {
+      type: String,
+      required: true,
+    },
+    profile: String,
+    title: {
+      type: String,
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    like_count: Number,
+    thumbnail: String,
+    images: [String],
   },
   {
     timestamps: true,
-    versionKey: false,
   }
 );
 
 module.exports = magazinePostSchema;
+// module.export = mongoose.model("MagazinePost", magazinePostSchema);

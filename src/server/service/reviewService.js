@@ -1,80 +1,57 @@
-const Review = require('../db/repository/reviewRepository'); // Review 모델을 가져옵니다.
+const ReviewRepository = require("../db/repository/reviewRepository");
 
-// 리뷰 생성 서비스
 async function createReview(reviewData) {
   try {
-    const newReview = await Review.create(reviewData);
+    const newReview = await ReviewRepository.createReview(reviewData);
     return newReview;
   } catch (error) {
-    // throw new Error('리뷰 생성 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "리뷰 생성 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("Error creating review");
   }
 }
 
-// 모든 리뷰 가져오기 서비스
-async function getAllReviews() {
+async function getAllReviews(post_id, user_id) {
   try {
-    const reviews = await Review.find();
+    let filter = {};
+    if (post_id) {
+      filter.post_id = post_id;
+    }
+    if (user_id) {
+      filter.user_id = user_id;
+    }
+    const reviews = await ReviewRepository.getAllReviews(filter);
     return reviews;
   } catch (error) {
-    // throw new Error('리뷰 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "리뷰 조회 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("Error fetching reviews");
   }
 }
 
-// 특정 리뷰 가져오기 서비스
 async function getReviewById(reviewId) {
   try {
-    const review = await Review.findById(reviewId);
+    const review = await ReviewRepository.getReviewById(reviewId);
     return review;
   } catch (error) {
-    // throw new Error('리뷰 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "리뷰 조회 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("Error fetching review");
   }
 }
 
-// 특정 사용자의 리뷰 가져오기 서비스
-async function getReviewsByUserId(userId) {
-  try {
-    const reviews = await Review.find({ user_id: userId });
-    return reviews;
-  } catch (error) {
-    // throw new Error('사용자 리뷰 조회 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "사용자 리뷰 조회 중 오류가 발생했습니다.";
-    throw error;
-  }
-}
-
-// 리뷰 업데이트 서비스
 async function updateReview(reviewId, newData) {
   try {
-    const updatedReview = await Review.findByIdAndUpdate(reviewId, newData, { new: true });
+    const updatedReview = await ReviewRepository.updateReview(
+      reviewId,
+      newData
+    );
     return updatedReview;
   } catch (error) {
-    // throw new Error('리뷰 업데이트 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "리뷰 업데이트 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("Error updating review");
   }
 }
 
-// 리뷰 삭제 서비스
 async function deleteReview(reviewId) {
   try {
-    const deletedReview = await Review.findByIdAndDelete(reviewId);
+    const deletedReview = await ReviewRepository.deleteReview(reviewId);
     return deletedReview;
   } catch (error) {
-    // throw new Error('리뷰 삭제 중 오류가 발생했습니다.');
-    error.status = 500;
-    error.message = "리뷰 삭제 중 오류가 발생했습니다.";
-    throw error;
+    throw new Error("Error deleting review");
   }
 }
 
@@ -82,7 +59,6 @@ module.exports = {
   createReview,
   getAllReviews,
   getReviewById,
-  getReviewsByUserId,
   updateReview,
   deleteReview,
 };
