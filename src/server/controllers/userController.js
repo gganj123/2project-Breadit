@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const User = require("../db/repository/userRepository");
 const UserService = require("../service/userService");
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
 const { accessTokenSecret, refreshTokenSecret } = config;
 
@@ -163,7 +163,10 @@ async function login(req, res, next) {
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
     });
-    const decodedAccessToken = jwt.verify(accessToken, accessTokenSecret);
+    const decodedAccessToken = jwt.verify(
+      accessToken,
+      accessTokenSecret
+    ).userId;
 
     return res.status(200).json({
       message: "로그인 되었습니다!",

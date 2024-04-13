@@ -2,6 +2,9 @@ const magazineService = require("../service/magazinePostService");
 const magazineValidator = require("../validation/magazinePostValidation");
 const Like = require("../db/repository/likeRepository");
 const MagazinePost = require("../db/repository/magazinePostRepository");
+const jwt = require("jsonwebtoken");
+const config = require("../../config/config");
+const { accessTokenSecret } = config;
 
 async function createMagazinePost(req, res, next) {
   try {
@@ -96,10 +99,10 @@ async function getMagazinePostById(req, res, next) {
       error.status = 404;
       throw error;
     }
-
+    const accessToken = req.headers.authorization.split(" ")[1];
     // 좋아요 상태를 확인합니다.
     const like = await Like.findOne({
-      user_id: "66168a5aa1a254d865677a6e",
+      user_id: jwt.verify(accessToken, accessTokenSecret).userId,
       post_id: postId,
     });
     const beLike = like ? true : false;
