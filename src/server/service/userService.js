@@ -44,17 +44,32 @@ async function getUserById(userId, requestingUserId) {
 // 유저 서비스 - 회원 정보 수정
 async function updateUserInfo(userId, newUserData, requestingUserId) {
   try {
-    if (!user._id.equals(userId)) {
-      // 여기도 변경해봄
-      throw new Error("권한이 없습니다. 자신의 정보만 수정할 수 있습니다.");
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      const error = new Error("해당 사용자를 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    if (user._id.toString() !== requestingUserId.toString()) {
+      const error = new Error(
+        "권한이 없습니다. 자신의 정보만 수정할 수 있습니다."
+      );
+      error.status = 403;
+      throw error;
     }
 
     const updatedUser = await UserModel.findByIdAndUpdate(userId, newUserData, {
       new: true,
     });
+
     if (!updatedUser) {
-      throw new Error("해당 사용자를 찾을 수 없습니다.");
+      const error = new Error("업데이트를 완료할 수 없습니다.");
+      error.status = 404;
+      throw error;
     }
+
     return updatedUser;
   } catch (error) {
     throw error;
