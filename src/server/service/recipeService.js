@@ -86,6 +86,28 @@ async function deleteRecipe(recipeId) {
   return deletedRecipe;
 }
 
+// 레시피 선택 삭제 서비스
+async function deleteRecipes(recipeIds) {
+  try {
+    // Use deleteMany to delete multiple recipes based on their ids
+    const deletedRecipes = await Recipe.deleteMany({
+      _id: { $in: recipeIds },
+    });
+
+    // Check if any recipes were deleted
+    if (deletedRecipes.deletedCount === 0) {
+      // If no recipes were deleted, throw an error
+      const error = new Error("삭제할 레시피가 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    return deletedRecipes;
+  } catch (error) {
+    throw error;
+  }
+}
+
 // 게시물의 좋아요를 처리하는 함수
 const mongoose = require("mongoose");
 
@@ -178,6 +200,7 @@ module.exports = {
   getRecipeById,
   updateRecipe,
   deleteRecipe,
+  deleteRecipes,
   recipeToggleLike,
   getRecipeWithLikeStatus,
   getRecipeWithBookmarkStatus,

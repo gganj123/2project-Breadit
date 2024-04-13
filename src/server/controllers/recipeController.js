@@ -88,6 +88,19 @@ async function deleteRecipe(req, res, next) {
     next(error);
   }
 }
+
+// 레시피 선택 삭제 컨트롤러
+async function deleteRecipes(req, res, next) {
+  try {
+    const recipeIds = req.body.recipeIds;
+    const deletedRecipes = await recipeService.deleteRecipes(recipeIds);
+    res.json(deletedRecipes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+    next(error);
+  }
+}
+
 // 게시물 좋아요 토글 컨트롤러
 async function recipeToggleLikeController(req, res) {
   const { user_id, post_id } = req.body;
@@ -147,6 +160,7 @@ module.exports = {
   getRecipeById,
   updateRecipe,
   deleteRecipe,
+  deleteRecipes,
   recipeToggleLikeController,
   getRecipeWithLikeStatusController,
   getRecipeWithBookmarkStatusController,
