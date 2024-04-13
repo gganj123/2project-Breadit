@@ -21,6 +21,7 @@ const recipeSchema = new mongoose.Schema(
     }, // 작성된 내용
     images: [String],
     like_count: Number,
+    thumbnail: String,
   },
   {
     timestamps: true,

@@ -1,5 +1,7 @@
 const Post = require("../db/repository/postRepository"); // Post 모델을 가져옵니다.
 const Like = require("../db/repository/likeRepository"); // Like 모델을 가져옵니다.
+const Bookmark = require("../db/repository/bookmarkRepository");
+
 const { ObjectId } = require("mongoose").Types;
 
 // 포스트 생성 서비스
@@ -86,7 +88,6 @@ async function deletePost(postId) {
 }
 
 // 게시물의 좋아요를 처리하는 함수
-const mongoose = require("mongoose");
 
 async function toggleLike(user_id, post_id) {
   try {
@@ -113,34 +114,61 @@ async function toggleLike(user_id, post_id) {
     throw error;
   }
 }
-// async function toggleLike(user_id, post_id) {
-//   try {
-//     const userId = mongoose.Types.ObjectId(user_id);
-//     const postId = mongoose.Types.ObjectId(post_id);
+//게시물의 좋아요 상태 함수
+async function getPostWithLikeStatus(post_id, user_id) {
+  try {
+    const postId = new ObjectId(post_id);
+    const userId = new ObjectId(user_id);
 
-//     const existingLike = await Like.findOne({
-//       user_id: userId,
-//       post_id: postId,
-//     });
+    const post = await Post.findById(postId);
+    if (!post) {
+      throw new Error("게시물을 찾을 수 없습니다.");
+    }
 
-//     if (existingLike) {
-//       await Post.findOneAndUpdate(
-//         { _id: postId },
-//         { $inc: { like_count: -1 } }
-//       );
-//       await Like.findOneAndRemove({ user_id: userId, post_id: postId });
-//     } else {
-//       await Post.findOneAndUpdate({ _id: postId }, { $inc: { like_count: 1 } });
-//       await Like.create({ user_id: userId, post_id: postId });
-//     }
+    const like = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
 
-//     const updatedPost = await Post.findById(postId);
-//     return updatedPost;
-//   } catch (error) {
-//     console.error("좋아요 토글 중 오류 발생:", error);
-//     throw error;
-//   }
-// }
+    const isLikedByUser = like ? true : false;
+
+    return {
+      post: post,
+      isLikedByUser: isLikedByUser,
+    };
+  } catch (error) {
+    console.error("포스트 정보 조회 중 오류 발생:", error);
+    throw error;
+  }
+}
+
+// 포스트의 북마크 상태 함수
+async function getPostWithBookmarkStatus(post_id, user_id) {
+  try {
+    const postId = new ObjectId(post_id);
+    const userId = new ObjectId(user_id);
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      throw new Error("포스트를 찾을 수 없습니다.");
+    }
+
+    const bookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const isBookmarkedByUser = bookmark ? true : false;
+
+    return {
+      post: post,
+      isBookmarkedByUser: isBookmarkedByUser,
+    };
+  } catch (error) {
+    console.error("포스트 정보 조회 중 오류 발생:", error);
+    throw error;
+  }
+}
 
 module.exports = {
   createPost,
@@ -149,4 +177,6 @@ module.exports = {
   updatePost,
   deletePost,
   toggleLike,
+  getPostWithLikeStatus,
+  getPostWithBookmarkStatus,
 };
