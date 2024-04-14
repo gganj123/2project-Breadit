@@ -114,6 +114,35 @@ async function getUserProfileAndNickname(userId) {
   }
 }
 
+// 카카오 소셜 로그인을 위한 사용자 조회 또는 생성 메서드
+async function findOrCreateKakaoUser(kakaoData) {
+  const {
+    id,
+    kakao_account: {
+      email,
+      profile: { nickname },
+    },
+  } = kakaoData;
+  const user = await model.user.findOne({
+    social_login_id: id,
+    social_login_provider: "Kakao",
+  });
+
+  if (user) {
+    return user; // 이미 존재하는 사용자 반환
+  } else {
+    // 새로운 카카오 사용자 생성
+    const newUser = await model.user.create({
+      email: email,
+      nickname: nickname,
+      social_login_provider: "Kakao",
+      social_login_id: id,
+      user_role: "user",
+    });
+    return newUser;
+  }
+}
+
 module.exports = {
   check_password,
   check_if_email_exists,
