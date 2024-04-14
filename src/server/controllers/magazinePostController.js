@@ -99,21 +99,28 @@ async function getMagazinePostById(req, res, next) {
       error.status = 404;
       throw error;
     }
-    const accessToken = req.headers.authorization.split(" ")[1];
-    // 좋아요 상태를 확인합니다.
-    const like = await Like.findOne({
-      user_id: jwt.verify(accessToken, accessTokenSecret).userId,
-      post_id: postId,
-    });
-    const beLike = like ? true : false;
+
+    // 헤더에서 accessToken 가져오기
+    const authorizationHeader = req.headers.authorization;
+    let beLike = false; // 좋아요 상태 기본값은 false로 설정
+
+    if (authorizationHeader) {
+      const accessToken = authorizationHeader.split(" ")[1];
+      // accessToken이 존재하는 경우에만 좋아요 상태 확인
+      const decodedToken = jwt.verify(accessToken, accessTokenSecret);
+      const like = await Like.findOne({
+        user_id: decodedToken.userId,
+        post_id: postId,
+      });
+      beLike = like ? true : false;
+    }
 
     // 매거진 포스트와 좋아요 상태를 응답으로 반환합니다.
-    res.json({ post, beLike });
+    res.json({ ...post.toObject(), beLike });
   } catch (error) {
     next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
-
 // 매거진 포스트 업데이트 컨트롤러
 async function updateMagazinePost(req, res, next) {
   try {
