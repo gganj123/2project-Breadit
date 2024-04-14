@@ -1,24 +1,41 @@
 require("dotenv").config();
-
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const app = express();
-const errorHandler = require("./server/middleware/errorHandler");
+const errorHandler = require("../src/server/middleware/errorHandler");
 const config = require("./config/config.js");
 const { MONGO_URI, PORT } = config;
+const emailRoutes = require("../src/server/routes/email");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(process.cwd(), "public")));
 
 const cors = require("cors");
+const axios = require("axios");
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN, // 클라이언트 주소 env에 넣어주시면 될것같아요!
+    origin: ["http://localhost:5173", "https://place.map.kakao.com"],
     credentials: true,
   })
 );
+
+app.get("/api/kakao-maps/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    console.log("Kakao Maps API 요청 전송");
+    const response = await axios.get(
+      `https://place.map.kakao.com/main/v/${id}`
+    );
+    console.log("Kakao Maps API 응답 받음:", response.data);
+    res.json(response.data);
+  } catch (error) {
+    console.error("Kakao Maps API 요청 실패:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("hello express");
@@ -53,6 +70,7 @@ app.use("/api/reviews", reviewRouter);
 app.use("/api/users", userRouter);
 app.use("/api/likes", likeRouter);
 app.use("/api/bookmarks", bookmarkRouter);
+app.use("/api/email", emailRoutes);
 app.use(errorHandler);
 
 // app.listen(port, () => console.log(`Server listening on port ${port}`));

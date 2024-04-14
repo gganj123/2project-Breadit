@@ -11,7 +11,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  profile: String,
+  profile: {
+    type: String,
+    required: true,
+  },
   social_login_provider: String,
   social_login_id: String,
   user_role: { type: String, default: "user" },
