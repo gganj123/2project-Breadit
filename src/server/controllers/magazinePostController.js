@@ -20,41 +20,12 @@ async function createMagazinePost(req, res, next) {
     const newMagazinePost = await magazineService.createMagazinePost(
       transformedData
     );
-
     res.status(201).json(newMagazinePost);
   } catch (error) {
     next(error);
   }
 }
-// 매거진 포스트 생성 컨트롤러
-// async function createMagazinePost(req, res, next) {
-//     try {
-//         const postData = req.body;
-//         const newPost = await magazineService.createMagazinePost(postData);
-//         res.status(201).json(newPost);
-//     } catch (error) {
-//         // res.status(500).json({ message: error.message });
-//         next(error);
-//       }
-// }
 
-// 모든 매거진 포스트 가져오기 컨트롤러
-// async function getAllMagazinePosts(req, res, next) {
-//   try {
-//     if (req.query.q) {
-//       // 검색어가 있는 경우
-//       const searchQuery = req.query.q;
-//       const posts = await magazineService.getAllMagazinePosts(searchQuery);
-//       res.json(posts);
-//     } else {
-//       // 검색어가 없는 경우
-//       const posts = await magazineService.getAllMagazinePosts();
-//       res.json(posts);
-//     }
-//   } catch (error) {
-//     next(error);
-//   }
-// }
 async function getAllMagazinePosts(req, res, next) {
   try {
     let limit = req.query.limit ? parseInt(req.query.limit) : null;
@@ -66,22 +37,6 @@ async function getAllMagazinePosts(req, res, next) {
     next(error);
   }
 }
-
-// 특정 매거진 포스트 가져오기 컨트롤러
-// async function getMagazinePostById(req, res, next) {
-//   try {
-//     const postId = req.params.id;
-//     const post = await magazineService.getMagazinePostById(postId);
-//     if (!post) {
-//       res.status(404).json({ message: "매거진 포스트를 찾을 수 없습니다." });
-//       return;
-//     }
-//     res.json(post);
-//   } catch (error) {
-//     // res.status(500).json({ message: error.message });
-//     next(error);
-//   }
-// }
 
 // 특정 매거진 포스트 가져오기 컨트롤러
 async function getMagazinePostById(req, res, next) {
@@ -155,6 +110,18 @@ async function deleteMagazinePost(req, res, next) {
   }
 }
 
+// 매거진 포스트 선택 삭제 컨트로러
+async function deleteMagazinePosts(req, res, next) {
+  try {
+    const postIds = req.body.postIds;
+    const deletedPosts = await magazineService.deleteMagazinePosts(postIds);
+    res.json(deletedPosts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+    next(error);
+  }
+}
+
 // 게시물 좋아요 토글 컨트롤러
 async function magazineToggleLikeController(req, res) {
   const { user_id, post_id } = req.body;
@@ -169,9 +136,8 @@ async function magazineToggleLikeController(req, res) {
     // 클라이언트에 업데이트된 게시물 데이터 전송
     res.json(updatedPost);
   } catch (error) {
-    // 에러 발생 시 에러 메시지 전송
-    console.error("좋아요 토글 중 오류 발생:", error);
-    res.status(500).json({ error: "서버 오류" });
+    // 에러 핸들러로 전달
+    next(error);
   }
 }
 
@@ -186,10 +152,8 @@ async function getMagazinePostWithLikeStatusController(req, res, next) {
     );
     res.json(postInfo);
   } catch (error) {
-    console.error("매거진 포스트 정보 조회 중 오류 발생:", error);
-    res.status(500).json({
-      message: "매거진 포스트 정보를 가져오는 중 오류가 발생했습니다.",
-    });
+    // 에러 핸들러로 전달
+    next(error);
   }
 }
 
@@ -204,10 +168,8 @@ async function getMagazinePostWithBookmarkStatusController(req, res, next) {
     );
     res.json(postInfo);
   } catch (error) {
-    console.error("매거진 포스트 정보 조회 중 오류 발생:", error);
-    res.status(500).json({
-      message: "매거진 포스트 정보를 가져오는 중 오류가 발생했습니다.",
-    });
+    // 에러 핸들러로 전달
+    next(error);
   }
 }
 
@@ -217,6 +179,7 @@ module.exports = {
   getMagazinePostById,
   updateMagazinePost,
   deleteMagazinePost,
+  deleteMagazinePosts,
   magazineToggleLikeController,
   getMagazinePostWithLikeStatusController,
   getMagazinePostWithBookmarkStatusController,

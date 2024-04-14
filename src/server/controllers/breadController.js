@@ -36,12 +36,12 @@ async function getBreadById(req, res, next) {
     const breadId = req.params.id;
     const bread = await breadService.getBreadById(breadId);
     if (!bread) {
-      res.status(404).json({ message: "브레드를 찾을 수 없습니다." });
-      return;
+      const error = new Error("브레드를 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
     }
     res.json(bread);
   } catch (error) {
-    // res.status(500).json({ message: error.message });
     next(error);
   }
 }

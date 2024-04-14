@@ -97,6 +97,25 @@ async function deleteMagazinePost(postId) {
   return deletedPost;
 }
 
+// 매거진 선택 삭제 서비스
+async function deleteMagazinePosts(postIds) {
+  try {
+    const deletedPosts = await MagazinePost.deleteMany({
+      _id: { $in: postIds },
+    });
+
+    if (deletedPosts.deletedCount === 0) {
+      const error = new Error("삭제할 매거진 포스트가 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    return deletedPosts;
+  } catch (error) {
+    throw error;
+  }
+}
+
 // 게시물의 좋아요를 처리하는 함수
 
 async function magazineToggleLike(user_id, post_id) {
@@ -188,6 +207,7 @@ module.exports = {
   getMagazinePostById,
   updateMagazinePost,
   deleteMagazinePost,
+  deleteMagazinePosts,
   magazineToggleLike,
   getMagazinePostWithLikeStatus,
   getMagazinePostWithBookmarkStatus,

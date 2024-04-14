@@ -20,4 +20,7 @@ router.put("/:id", magazineController.updateMagazinePost);
 // 매거진 포스트 삭제
 router.delete("/:id", magazineController.deleteMagazinePost);
 
+// 매거진 포스트 선택 삭제
+router.delete("/", magazineController.deleteMagazinePosts);
+
 module.exports = router;

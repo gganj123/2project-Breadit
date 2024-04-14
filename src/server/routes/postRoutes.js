@@ -20,4 +20,7 @@ router.put("/:id", postController.updatePost);
 // DELETE 요청: 포스트 삭제
 router.delete("/:id", postController.deletePost);
 
+// DELETE 요청: 포스트 선택 삭제
+router.delete("/", postController.deletePosts);
+
 module.exports = router;

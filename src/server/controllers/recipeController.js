@@ -116,9 +116,8 @@ async function recipeToggleLikeController(req, res) {
     // 클라이언트에 업데이트된 게시물 데이터 전송
     res.json(updatedPost);
   } catch (error) {
-    // 에러 발생 시 에러 메시지 전송
-    console.error("좋아요 토글 중 오류 발생:", error);
-    res.status(500).json({ error: "서버 오류" });
+    // 에러 핸들러로 전달
+    next(error);
   }
 }
 
@@ -133,10 +132,8 @@ async function getRecipeWithLikeStatusController(req, res, next) {
     );
     res.json(postInfo);
   } catch (error) {
-    console.error("레시피 정보 조회 중 오류 발생:", error);
-    res.status(500).json({
-      message: "레시피 정보를 가져오는 중 오류가 발생했습니다.",
-    });
+    // 에러 핸들러로 전달
+    next(error);
   }
 }
 
@@ -151,10 +148,8 @@ async function getRecipeWithBookmarkStatusController(req, res, next) {
     );
     res.json(postInfo);
   } catch (error) {
-    console.error("레시피 정보 조회 중 오류 발생:", error);
-    res.status(500).json({
-      message: "레시피 정보를 가져오는 중 오류가 발생했습니다.",
-    });
+    // 에러 핸들러로 전달
+    next(error);
   }
 }
 

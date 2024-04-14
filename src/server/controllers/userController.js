@@ -65,7 +65,7 @@ async function getUserById(req, res, next) {
     res.json(user);
   } catch (error) {
     if (error.name === "JsonWebTokenError") {
-      return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+      return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
     }
     console.log(`Error retrieving user: ${error.message}`);
     next(error);

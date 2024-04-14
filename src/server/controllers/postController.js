@@ -77,6 +77,18 @@ async function deletePost(req, res, next) {
   }
 }
 
+// 포스트 선택 삭제 컨트롤러
+async function deletePosts(req, res, next) {
+  try {
+    const postIds = req.body.postIds;
+    const deletedPosts = await postService.deletePosts(postIds);
+    res.json(deletedPosts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+    next(error);
+  }
+}
+
 // 게시물 좋아요 토글 컨트롤러
 async function toggleLikeController(req, res) {
   const { user_id, post_id } = req.body;
@@ -133,6 +145,7 @@ module.exports = {
   getPostById,
   updatePost,
   deletePost,
+  deletePosts,
   toggleLikeController,
   getPostWithLikeStatusController,
   getPostWithBookmarkStatusController,

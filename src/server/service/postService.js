@@ -88,6 +88,25 @@ async function deletePost(postId) {
   return deletedPost;
 }
 
+// 포스트 선택 삭제 서비스
+async function deletePosts(postIds) {
+  try {
+    const deletedPosts = await Post.deleteMany({
+      _id: { $in: postIds },
+    });
+
+    if (deletedPosts.deletedCount === 0) {
+      const error = new Error("삭제할 포스트가 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    return deletedPosts;
+  } catch (error) {
+    throw error;
+  }
+}
+
 // 게시물의 좋아요를 처리하는 함수
 
 async function toggleLike(user_id, post_id) {
@@ -177,6 +196,7 @@ module.exports = {
   getPostById,
   updatePost,
   deletePost,
+  deletePosts,
   toggleLike,
   getPostWithLikeStatus,
   getPostWithBookmarkStatus,

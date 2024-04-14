@@ -21,6 +21,7 @@ async function createLike(req, res) {
 //   }
 // }
 
+// 모든 좋아요 조회 컨트롤러
 async function getAllLikes(req, res, next) {
   try {
     const { post_id, user_id } = req.query;
