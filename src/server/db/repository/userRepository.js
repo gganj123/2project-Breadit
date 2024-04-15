@@ -102,8 +102,8 @@ async function findById(userId) {
 // userId로 유저 조회 및 필요한 데이터 반환하는 함수
 async function getUserProfileAndNickname(userId) {
   try {
-    const user = await user
-      .findOne({ user_id: userId })
+    const user = await model.user
+      .findOne({ _id: userId })
       .select("profile nickname");
     if (!user) {
       throw new Error("해당 유저를 찾을 수 없습니다.");
@@ -116,25 +116,33 @@ async function getUserProfileAndNickname(userId) {
 
 // 카카오 소셜 로그인을 위한 사용자 조회 또는 생성 메서드
 async function findOrCreateKakaoUser(kakaoData) {
-  const {
-    id,
-    kakao_account: {
-      email,
-      profile: { nickname },
-    },
-  } = kakaoData;
+  const { id, kakao_account } = kakaoData;
+  const email = kakao_account?.email;
+  const nickname = kakao_account?.profile?.nickname || "Default Nickname";
+
+  if (!email) {
+    throw new Error(
+      "카카오 계정에서 이메일 정보를 찾을 수 없습니다. 이메일 제공에 동의해주세요."
+    );
+  }
+
+  console.log(`Email from Kakao: ${email}`); // 이메일 로깅 추가
+
   const user = await model.user.findOne({
     social_login_id: id,
     social_login_provider: "Kakao",
   });
 
   if (user) {
-    return user; // 이미 존재하는 사용자 반환
+    return user;
   } else {
-    // 새로운 카카오 사용자 생성
+    if (!email) {
+      throw new Error("카카오 계정에 이메일 정보가 없습니다.");
+    }
+
     const newUser = await model.user.create({
-      email: email,
-      nickname: nickname,
+      email,
+      nickname: nickname || "Default Nickname",
       social_login_provider: "Kakao",
       social_login_id: id,
       user_role: "user",

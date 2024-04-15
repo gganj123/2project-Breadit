@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const User = require("../db/repository/userRepository");
 const UserService = require("../service/userService");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const bcrypt = require("bcrypt");
 const config = require("../../config/config");
 const {
@@ -241,52 +242,53 @@ async function login(req, res, next) {
 }
 
 // 카카오 로그인
+// 카카오 로그인
 async function kakaoLogin(req, res) {
+  const { code } = req.body;
   try {
-    const {
-      id,
-      kakao_account: {
-        email,
-        profile: { nickname },
+    const tokenRequestUrl = "https://kauth.kakao.com/oauth/token";
+    const params = new URLSearchParams();
+    params.append("grant_type", "authorization_code");
+    params.append("client_id", config.kakao.clientId);
+    params.append("redirect_uri", config.kakao.redirectUri);
+    params.append("code", code);
+
+    const kakaoResponse = await axios.post(tokenRequestUrl, params.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-    } = req.body;
-    let user = await User.findOne({
-      social_login_id: id,
-      social_login_provider: "Kakao",
     });
 
-    if (!user) {
-      user = await User.create({
-        email,
-        nickname,
-        social_login_id: id,
-        social_login_provider: "Kakao",
-      });
-    }
+    const { access_token } = kakaoResponse.data;
 
-    // 토큰 생성 로직 등은 기존과 동일하게 처리
-    res.status(200).json({
-      /* 응답 데이터 */
+    // 카카오 사용자 정보 요청
+    const userInfoResponse = await axios.get(
+      "https://kapi.kakao.com/v2/user/me",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+        params: {
+          property_keys: JSON.stringify([
+            "kakao_account.email",
+            "properties.nickname",
+          ]), // 이메일과 닉네임 정보 요청
+        },
+      }
+    );
+
+    const userInfo = userInfoResponse.data;
+    console.log("Kakao user info:", userInfo); // 로깅 추가
+
+    const email = userInfo.kakao_account.email;
+    const nickname = userInfo.properties?.nickname || "Default Nickname";
+
+    const user = await User.findOrCreateKakaoUser({
+      id: userInfo.id,
+      email: email,
+      nickname: nickname,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-}
 
-// 로그아웃 컨트롤러
-async function logout(req, res) {
-  return res
-    .status(200)
-    .json({ message: "로그아웃 되었습니다. 클라이언트에서 토큰 삭제 필요." });
-}
-
-// 카카오 소셜 로그인 컨트롤러
-async function kakaoLogin(req, res, next) {
-  try {
-    const kakaoUserData = req.body; // 카카오 로그인에서 전달받은 사용자 데이터
-
-    const user = await User.findOrCreateKakaoUser(kakaoUserData);
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
       expiresIn: "15m",
     });
@@ -306,9 +308,16 @@ async function kakaoLogin(req, res, next) {
       },
     });
   } catch (error) {
-    console.log(`Error in Kakao login: ${error.message}`);
-    next(error);
+    console.error("Error in Kakao login:", error);
+    res.status(500).json({ error: error.message });
   }
+}
+
+// 로그아웃 컨트롤러
+async function logout(req, res) {
+  return res
+    .status(200)
+    .json({ message: "로그아웃 되었습니다. 클라이언트에서 토큰 삭제 필요." });
 }
 
 // 토큰 갱신 컨트롤러
