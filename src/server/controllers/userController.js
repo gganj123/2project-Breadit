@@ -240,6 +240,40 @@ async function login(req, res, next) {
   }
 }
 
+// 카카오 로그인
+async function kakaoLogin(req, res) {
+  try {
+    const {
+      id,
+      kakao_account: {
+        email,
+        profile: { nickname },
+      },
+    } = req.body;
+    let user = await User.findOne({
+      social_login_id: id,
+      social_login_provider: "Kakao",
+    });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        nickname,
+        social_login_id: id,
+        social_login_provider: "Kakao",
+      });
+    }
+
+    // 토큰 생성 로직 등은 기존과 동일하게 처리
+    res.status(200).json({
+      /* 응답 데이터 */
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 // 로그아웃 컨트롤러
 async function logout(req, res) {
   return res

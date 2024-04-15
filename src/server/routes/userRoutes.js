@@ -10,7 +10,7 @@ router.delete("/:userId", authenticateToken, userController.deleteUser);
 
 // POST 요청: 로그인
 router.post("/login", userController.login);
-// router.post("/login/kakao", userController.kakaoLogin);
+router.post("/login/kakao", userController.kakaoLogin);
 
 // 로그아웃 라우트
 router.post("/logout", userController.logout);

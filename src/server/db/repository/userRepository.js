@@ -144,6 +144,7 @@ async function findOrCreateKakaoUser(kakaoData) {
 }
 
 module.exports = {
+  getUserById,
   check_password,
   check_if_email_exists,
   findByEmail,
@@ -151,6 +152,7 @@ module.exports = {
   update_user,
   // delete_user,
   getUserProfileAndNickname,
+  findOrCreateKakaoUser,
   find,
   create,
   findById,
