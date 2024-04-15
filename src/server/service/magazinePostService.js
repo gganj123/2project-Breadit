@@ -1,7 +1,6 @@
 const MagazinePost = require("../db/repository/magazinePostRepository");
 const Like = require("../db/repository/likeRepository"); // Like 모델을 가져옵니다.
 const Bookmark = require("../db/repository/bookmarkRepository");
-
 const { ObjectId } = require("mongoose").Types;
 
 // 매거진 포스트 생성
@@ -61,14 +60,19 @@ async function getMagazinePostById(postId) {
       post_id: postId,
     });
 
-    const beLike = like ? true : false;
+    const bookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
 
-    return { post, beLike };
+    const beLike = like ? true : false;
+    const beBookmark = bookmark ? true : false;
+
+    return { post, beLike, beBookmark };
   } catch (error) {
     throw error;
   }
 }
-
 // 매거진 포스트 업데이트
 async function updateMagazinePost(postId, newData) {
   const updatedPost = await MagazinePost.findByIdAndUpdate(postId, newData, {
@@ -145,6 +149,31 @@ async function magazineToggleLike(user_id, post_id) {
     throw error;
   }
 }
+
+// 매거진의 북마크 토글 함수
+async function magazineToggleBookmark(user_id, post_id) {
+  try {
+    const userId = new ObjectId(user_id);
+    const postId = new ObjectId(post_id);
+
+    const existingBookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    if (existingBookmark) {
+      await Bookmark.findOneAndRemove({ user_id: userId, post_id: postId });
+    } else {
+      await Bookmark.create({ user_id: userId, post_id: postId });
+    }
+
+    const updatedPost = await MagazinePost.findById(postId);
+    return updatedPost;
+  } catch (error) {
+    console.error("북마크 토글 중 오류 발생:", error);
+    throw error;
+  }
+}
 // 매거진 포스트의 좋아요 상태 함수
 async function getMagazinePostWithLikeStatus(post_id, user_id) {
   try {
@@ -209,6 +238,7 @@ module.exports = {
   deleteMagazinePost,
   deleteMagazinePosts,
   magazineToggleLike,
+  magazineToggleBookmark,
   getMagazinePostWithLikeStatus,
   getMagazinePostWithBookmarkStatus,
 };

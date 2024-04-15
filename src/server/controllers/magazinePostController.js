@@ -1,6 +1,7 @@
 const magazineService = require("../service/magazinePostService");
 const magazineValidator = require("../validation/magazinePostValidation");
 const Like = require("../db/repository/likeRepository");
+const Bookmark = require("../db/repository/bookmarkRepository");
 const MagazinePost = require("../db/repository/magazinePostRepository");
 const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
@@ -58,20 +59,27 @@ async function getMagazinePostById(req, res, next) {
     // 헤더에서 accessToken 가져오기
     const authorizationHeader = req.headers.authorization;
     let beLike = false; // 좋아요 상태 기본값은 false로 설정
+    let beBookmark = false; // 북마크 상태 기본값은 false로 설정
 
     if (authorizationHeader) {
       const accessToken = authorizationHeader.split(" ")[1];
-      // accessToken이 존재하는 경우에만 좋아요 상태 확인
+      // accessToken이 존재하는 경우에만 좋아요 상태 및 북마크 상태 확인
       const decodedToken = jwt.verify(accessToken, accessTokenSecret);
       const like = await Like.findOne({
         user_id: decodedToken.userId,
         post_id: postId,
       });
       beLike = like ? true : false;
+
+      const bookmark = await Bookmark.findOne({
+        user_id: decodedToken.userId,
+        post_id: postId,
+      });
+      beBookmark = bookmark ? true : false;
     }
 
-    // 매거진 포스트와 좋아요 상태를 응답으로 반환합니다.
-    res.json({ ...post.toObject(), beLike });
+    // 매거진 포스트와 좋아요 상태, 북마크 상태를 응답으로 반환합니다.
+    res.json({ ...post.toObject(), beLike, beBookmark });
   } catch (error) {
     next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
@@ -141,6 +149,25 @@ async function magazineToggleLikeController(req, res) {
   }
 }
 
+// 게시물 북마크 토글 컨트롤러
+async function magazineToggleBookmarkController(req, res, next) {
+  const { user_id, post_id } = req.body;
+
+  try {
+    // 북마크 토글 함수 호출
+    const updatedPost = await magazineService.magazineToggleBookmark(
+      user_id,
+      post_id
+    );
+
+    // 클라이언트에 업데이트된 게시물 데이터 전송
+    res.json(updatedPost);
+  } catch (error) {
+    // 에러 핸들러로 전달
+    next(error);
+  }
+}
+
 //게시물 좋아요 상태 호출
 async function getMagazinePostWithLikeStatusController(req, res, next) {
   const { post_id } = req.params;
@@ -181,6 +208,7 @@ module.exports = {
   deleteMagazinePost,
   deleteMagazinePosts,
   magazineToggleLikeController,
+  magazineToggleBookmarkController,
   getMagazinePostWithLikeStatusController,
   getMagazinePostWithBookmarkStatusController,
 };

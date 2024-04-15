@@ -30,4 +30,19 @@ router.post(
   postController.getPostWithBookmarkStatusController
 );
 
+// 매거진 북마크 토글 라우터
+router.post(
+  "/magazinebooktoggle",
+  magazineController.magazineToggleBookmarkController
+);
+
+// 레시피 북마크 토글 라우터
+router.post(
+  "/recipebooktoggle",
+  recipeController.recipeToggleBookmarkController
+);
+
+// 추천포스트 북마크 토글 라우터
+router.post("/postbooktoggle", postController.postToggleBookmarkController);
+
 module.exports = router;

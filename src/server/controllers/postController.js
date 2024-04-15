@@ -1,8 +1,13 @@
 const postService = require("../service/postService");
 const postValidation = require("../validation/postValidation"); // 유효성 검사 모듈 추가
+const Like = require("../db/repository/likeRepository");
+const Bookmark = require("../db/repository/bookmarkRepository");
+const Post = require("../db/repository/postRepository");
+const jwt = require("jsonwebtoken");
+const config = require("../../config/config");
+const { accessTokenSecret } = config;
 
 // 포스트 생성 컨트롤러
-
 async function createPost(req, res, next) {
   try {
     const postData = req.body;
@@ -30,19 +35,47 @@ async function getAllPosts(req, res, next) {
   }
 }
 
-// 특정 포스트 가져오기 컨트롤러
+//특정 포스트 가져오기
 async function getPostById(req, res, next) {
+  const postId = req.params.id; // 요청에서 postId 파라미터 추출
+
   try {
-    const postId = req.params.id;
-    const post = await postService.getPostById(postId);
+    // 포스트를 데이터베이스에서 조회합니다.
+    const post = await Post.findById(postId);
+
+    // 포스트가 존재하지 않는 경우 404 에러를 발생시킵니다.
     if (!post) {
-      res.status(404).json({ message: "포스트를 찾을 수 없습니다." });
-      return;
+      const error = new Error("postId에 해당하는 포스트를 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
     }
-    res.json(post);
+
+    // 헤더에서 accessToken 가져오기
+    const authorizationHeader = req.headers.authorization;
+    let beLike = false; // 좋아요 상태 기본값은 false로 설정
+    let beBookmark = false; // 북마크 상태 기본값은 false로 설정
+
+    if (authorizationHeader) {
+      const accessToken = authorizationHeader.split(" ")[1];
+      // accessToken이 존재하는 경우에만 좋아요 상태 및 북마크 상태 확인
+      const decodedToken = jwt.verify(accessToken, accessTokenSecret);
+      const like = await Like.findOne({
+        user_id: decodedToken.userId,
+        post_id: postId,
+      });
+      beLike = like ? true : false;
+
+      const bookmark = await Bookmark.findOne({
+        user_id: decodedToken.userId,
+        post_id: postId,
+      });
+      beBookmark = bookmark ? true : false;
+    }
+
+    // 포스트와 좋아요 상태, 북마크 상태를 응답으로 반환합니다.
+    res.json({ ...post.toObject(), beLike, beBookmark });
   } catch (error) {
-    // res.status(500).json({ message: error.message });
-    next(error);
+    next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
 
@@ -106,6 +139,22 @@ async function toggleLikeController(req, res) {
   }
 }
 
+// 포스트 북마크 토글 컨트롤러
+async function postToggleBookmarkController(req, res, next) {
+  const { user_id, post_id } = req.body;
+
+  try {
+    // 포스트 북마크 토글 함수 호출
+    const updatedPost = await postService.postToggleBookmark(user_id, post_id);
+
+    // 클라이언트에 업데이트된 포스트 데이터 전송
+    res.json(updatedPost);
+  } catch (error) {
+    // 에러 핸들러로 전달
+    next(error);
+  }
+}
+
 async function getPostWithLikeStatusController(req, res, next) {
   const { post_id } = req.params;
   const user_id = req.body.user_id; // 가정: 사용자 ID는 요청 객체의 user 속성에 저장되어 있음
@@ -147,6 +196,7 @@ module.exports = {
   deletePost,
   deletePosts,
   toggleLikeController,
+  postToggleBookmarkController,
   getPostWithLikeStatusController,
   getPostWithBookmarkStatusController,
 };

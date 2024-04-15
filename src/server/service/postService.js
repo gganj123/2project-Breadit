@@ -1,7 +1,6 @@
 const Post = require("../db/repository/postRepository"); // Post 모델을 가져옵니다.
 const Like = require("../db/repository/likeRepository"); // Like 모델을 가져옵니다.
 const Bookmark = require("../db/repository/bookmarkRepository");
-
 const { ObjectId } = require("mongoose").Types;
 
 // 포스트 생성 서비스
@@ -45,16 +44,30 @@ async function getAllPosts(searchQuery, limit) {
   }
 }
 
-// 특정 포스트 가져오기 서비스
+// 특정 포스트 조회
 async function getPostById(postId) {
   try {
     const post = await Post.findById(postId);
     if (!post) {
-      const error = new Error("postId에 해당하는 포스트글을 찾을 수 없습니다.");
+      const error = new Error("postId에 해당하는 포스트를 찾을 수 없습니다.");
       error.status = 404;
       throw error;
     }
-    return post;
+
+    const like = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const bookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const beLike = like ? true : false;
+    const beBookmark = bookmark ? true : false;
+
+    return { post, beLike, beBookmark };
   } catch (error) {
     throw error;
   }
@@ -134,6 +147,32 @@ async function toggleLike(user_id, post_id) {
     throw error;
   }
 }
+
+// 포스트의 북마크 토글 함수
+async function postToggleBookmark(user_id, post_id) {
+  try {
+    const userId = new ObjectId(user_id);
+    const postId = new ObjectId(post_id);
+
+    const existingBookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    if (existingBookmark) {
+      await Bookmark.findOneAndRemove({ user_id: userId, post_id: postId });
+    } else {
+      await Bookmark.create({ user_id: userId, post_id: postId });
+    }
+
+    const updatedPost = await Post.findById(postId);
+    return updatedPost;
+  } catch (error) {
+    console.error("북마크 토글 중 오류 발생:", error);
+    throw error;
+  }
+}
+
 //게시물의 좋아요 상태 함수
 async function getPostWithLikeStatus(post_id, user_id) {
   try {
@@ -198,6 +237,7 @@ module.exports = {
   deletePost,
   deletePosts,
   toggleLike,
+  postToggleBookmark,
   getPostWithLikeStatus,
   getPostWithBookmarkStatus,
 };

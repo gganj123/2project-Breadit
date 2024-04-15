@@ -50,16 +50,31 @@ async function getAllRecipes(searchQuery, limit, sortBy) {
     throw error;
   }
 }
-// 특정 레시피 가져오기 서비스
-async function getRecipeById(recipeId) {
+
+//특정 레시피 조회
+async function getRecipeById(postId) {
   try {
-    const recipe = await Recipe.findById(recipeId);
+    const recipe = await Recipe.findById(postId);
     if (!recipe) {
-      const error = new Error("recipeId에 해당하는 레시피가 없습니다.");
+      const error = new Error("recipeId에 해당하는 레시피를 찾을 수 없습니다.");
       error.status = 404;
       throw error;
     }
-    return recipe;
+
+    const like = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const bookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const beLike = like ? true : false;
+    const beBookmark = bookmark ? true : false;
+
+    return { recipe, beLike, beBookmark };
   } catch (error) {
     throw error;
   }
@@ -146,6 +161,31 @@ async function recipeToggleLike(user_id, post_id) {
   }
 }
 
+// 레시피의 북마크 토글 함수
+async function recipeToggleBookmark(user_id, recipe_id) {
+  try {
+    const userId = new ObjectId(user_id);
+    const recipeId = new ObjectId(recipe_id);
+
+    const existingBookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: recipeId,
+    });
+
+    if (existingBookmark) {
+      await Bookmark.findOneAndRemove({ user_id: userId, post_id: recipeId });
+    } else {
+      await Bookmark.create({ user_id: userId, post_id: recipeId });
+    }
+
+    const updatedRecipe = await Recipe.findById(recipeId);
+    return updatedRecipe;
+  } catch (error) {
+    console.error("북마크 토글 중 오류 발생:", error);
+    throw error;
+  }
+}
+
 // 레시피의 좋아요 상태 함수
 async function getRecipeWithLikeStatus(post_id, user_id) {
   try {
@@ -209,6 +249,7 @@ module.exports = {
   deleteRecipe,
   deleteRecipes,
   recipeToggleLike,
+  recipeToggleBookmark,
   getRecipeWithLikeStatus,
   getRecipeWithBookmarkStatus,
 };

@@ -1,5 +1,12 @@
 const recipeService = require("../service/recipeService");
 const recipeValidation = require("../validation/recipeValidation");
+const Like = require("../db/repository/likeRepository");
+const Bookmark = require("../db/repository/bookmarkRepository");
+const Recipe = require("../db/repository/recipeRepository");
+const jwt = require("jsonwebtoken");
+const config = require("../../config/config");
+const { accessTokenSecret } = config;
+
 // 레시피 생성 컨트롤러
 async function createRecipe(req, res, next) {
   try {
@@ -42,22 +49,49 @@ async function getAllRecipes(req, res, next) {
   }
 }
 
-// 특정 레시피 가져오기 컨트롤러
+//특정 레시피 조회 함수
 async function getRecipeById(req, res, next) {
+  const postId = req.params.id; // 요청에서 recipeId 파라미터 추출
+
   try {
-    const recipeId = req.params.id;
-    const recipe = await recipeService.getRecipeById(recipeId);
+    // 레시피를 데이터베이스에서 조회합니다.
+    const recipe = await Recipe.findById(postId);
+
+    // 레시피가 존재하지 않는 경우 404 에러를 발생시킵니다.
     if (!recipe) {
-      res.status(404).json({ message: "레시피를 찾을 수 없습니다." });
-      return;
+      const error = new Error("recipeId에 해당하는 레시피를 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
     }
-    res.json(recipe);
+
+    // 헤더에서 accessToken 가져오기
+    const authorizationHeader = req.headers.authorization;
+    let beLike = false; // 좋아요 상태 기본값은 false로 설정
+    let beBookmark = false; // 북마크 상태 기본값은 false로 설정
+
+    if (authorizationHeader) {
+      const accessToken = authorizationHeader.split(" ")[1];
+      // accessToken이 존재하는 경우에만 좋아요 상태 및 북마크 상태 확인
+      const decodedToken = jwt.verify(accessToken, accessTokenSecret);
+      const like = await Like.findOne({
+        user_id: decodedToken.userId,
+        post_id: postId,
+      });
+      beLike = like ? true : false;
+
+      const bookmark = await Bookmark.findOne({
+        user_id: decodedToken.userId,
+        post_id: postId,
+      });
+      beBookmark = bookmark ? true : false;
+    }
+
+    // 레시피와 좋아요 상태, 북마크 상태를 응답으로 반환합니다.
+    res.json({ ...recipe.toObject(), beLike, beBookmark });
   } catch (error) {
-    // res.status(500).json({ message: error.message });
-    next(error);
+    next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
-
 // 레시피 업데이트 컨트롤러
 async function updateRecipe(req, res, next) {
   try {
@@ -121,6 +155,25 @@ async function recipeToggleLikeController(req, res) {
   }
 }
 
+// 레시피 북마크 토글 컨트롤러
+async function recipeToggleBookmarkController(req, res, next) {
+  const { user_id, post_id } = req.body;
+
+  try {
+    // 레시피 북마크 토글 함수 호출
+    const updatedRecipe = await recipeService.recipeToggleBookmark(
+      user_id,
+      post_id
+    );
+
+    // 클라이언트에 업데이트된 레시피 데이터 전송
+    res.json(updatedRecipe);
+  } catch (error) {
+    // 에러 핸들러로 전달
+    next(error);
+  }
+}
+
 // 레시피 좋아요 상태 호출
 async function getRecipeWithLikeStatusController(req, res, next) {
   const { post_id } = req.params;
@@ -161,6 +214,7 @@ module.exports = {
   deleteRecipe,
   deleteRecipes,
   recipeToggleLikeController,
+  recipeToggleBookmarkController,
   getRecipeWithLikeStatusController,
   getRecipeWithBookmarkStatusController,
 };
