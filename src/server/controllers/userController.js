@@ -371,29 +371,30 @@ async function kakaoLogin(req, res) {
 async function refreshToken(req, res) {
   const { refreshToken } = req.body;
   if (!refreshToken) {
-    return res
-      .status(401)
-      .json({ message: "Refresh Token이 제공되지 않았습니다." });
+    console.error("Refresh Token not provided");
+    return res.status(401).json({ message: "Refresh Token is required" });
   }
-  console.log(accessTokenSecret);
 
-  // REFRESH_TOKEN_SECRET 환경 변수 사용
-  jwt.verify(refreshToken, refreshTokenSecret, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+  try {
+    // 리프레시 토큰을 검증합니다.
+    const decoded = jwt.verify(refreshToken, refreshTokenSecret);
+    if (!decoded) {
+      return res.status(403).json({ message: "Invalid refresh token" });
     }
-
-    // ACCESS_TOKEN_SECRET 환경 변수 사용
-    const accessToken = jwt.sign(
-      { userId: user._id.toString() },
-      accessTokenSecret,
-      {
-        expiresIn: "15m",
-      }
-    );
-
-    res.json({ accessToken });
-  });
+    const userId = decoded.userId; // 토큰에서 사용자 ID 추출
+    // 새 액세스 토큰 발급
+    const accessToken = jwt.sign({ userId: userId }, accessTokenSecret, {
+      expiresIn: "15m", // 액세스 토큰 만료 시간
+    });
+    // 갱신된 액세스 토큰과 사용자 ID를 응답으로 보냅니다.
+    res.json({
+      accessToken,
+      userId,
+    });
+  } catch (error) {
+    console.error(`Token validation failed: ${error.message}`);
+    return res.status(403).json({ message: "Invalid token" });
+  }
 }
 
 module.exports = {
