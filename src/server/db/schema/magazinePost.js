@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 const magazinePostSchema = new mongoose.Schema(
   {
-    post_id: mongoose.Schema.Types.ObjectId,
     user_id: {
       type: String,
       required: true,
@@ -20,7 +19,9 @@ const magazinePostSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    images: String,
+    like_count: Number,
+    thumbnail: String,
+    images: [String],
   },
   {
     timestamps: true,

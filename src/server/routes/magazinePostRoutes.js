@@ -20,7 +20,7 @@ router.put("/:id", magazineController.updateMagazinePost);
 // 매거진 포스트 삭제
 router.delete("/:id", magazineController.deleteMagazinePost);
 
-// MagazinePost 모델의 댓글 필터링
-// router.get("/:id/comments", magazineController.getCommentsForMagazinePost);
+// 매거진 포스트 선택 삭제
+router.delete("/", magazineController.deleteMagazinePosts);
 
 module.exports = router;

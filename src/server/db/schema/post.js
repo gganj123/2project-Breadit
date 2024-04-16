@@ -19,7 +19,10 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     }, // 작성된 내용
-    images: String,
+    images: [String],
+    thumbnail: String,
+    like_count: Number,
+
     bread_id: {
       type: String,
     },

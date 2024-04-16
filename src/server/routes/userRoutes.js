@@ -18,6 +18,8 @@ router.post("/logout", userController.logout);
 // POST 요청: 회원가입
 router.post("/", userController.signUp);
 
+router.post("/refreshToken", userController.refreshToken);
+
 // PUT 요청: 회원 정보 수정
 router.put("/:userId", userController.updateUserInfo);
 
