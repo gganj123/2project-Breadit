@@ -5,7 +5,7 @@ const Bookmark = require("../db/repository/bookmarkRepository");
 const Post = require("../db/repository/postRepository");
 const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
-const { accessTokenSecret } = config;
+const { ACCESS_TOKEN_SECRET } = config;
 
 // 포스트 생성 컨트롤러
 async function createPost(req, res, next) {
@@ -58,7 +58,7 @@ async function getPostById(req, res, next) {
     if (authorizationHeader) {
       const accessToken = authorizationHeader.split(" ")[1];
       // accessToken이 존재하는 경우에만 좋아요 상태 및 북마크 상태 확인
-      const decodedToken = jwt.verify(accessToken, accessTokenSecret);
+      const decodedToken = jwt.verify(accessToken, ACCESS_TOKEN_SECRET);
       const like = await Like.findOne({
         user_id: decodedToken.userId,
         post_id: postId,

@@ -5,7 +5,7 @@ const Bookmark = require("../db/repository/bookmarkRepository");
 const MagazinePost = require("../db/repository/magazinePostRepository");
 const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
-const { accessTokenSecret } = config;
+const { ACCESS_TOKEN_SECRET } = config;
 
 async function createMagazinePost(req, res, next) {
   try {
@@ -64,7 +64,7 @@ async function getMagazinePostById(req, res, next) {
     if (authorizationHeader) {
       const accessToken = authorizationHeader.split(" ")[1];
       // accessToken이 존재하는 경우에만 좋아요 상태 및 북마크 상태 확인
-      const decodedToken = jwt.verify(accessToken, accessTokenSecret);
+      const decodedToken = jwt.verify(accessToken, ACCESS_TOKEN_SECRET);
       const like = await Like.findOne({
         user_id: decodedToken.userId,
         post_id: postId,
@@ -84,7 +84,6 @@ async function getMagazinePostById(req, res, next) {
     next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
-
 // 매거진 포스트 업데이트 컨트롤러
 async function updateMagazinePost(req, res, next) {
   try {

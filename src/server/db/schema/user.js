@@ -11,13 +11,31 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  profile: String,
-  social_login_provider: String,
-  social_login_id: String,
-  user_role: { type: String, default: "user" },
+  profile: {
+    type: String,
+    required: false, // 프로필 이미지는 필수가 아님
+  },
+  user_role: {
+    type: String,
+    default: "user",
+  },
+  social_login_provider: {
+    type: String,
+    required: false,
+  },
+  social_login_id: {
+    type: String,
+    required: false,
+  },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.social_login_id;
+    }, // 소셜 로그인 사용자는 비밀번호 필요 없음
+  },
+  confirmPassword: {
+    type: String,
+    required: false,
   },
 });
 

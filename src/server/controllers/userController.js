@@ -1,18 +1,38 @@
 const mongoose = require("mongoose");
 const User = require("../db/repository/userRepository");
 const UserService = require("../service/userService");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const config = require("../../config/config");
-const { accessTokenSecret, refreshTokenSecret } = config;
+const axios = require("axios");
 
-/// 회원가입 컨트롤러
+const {
+  ACCESS_TOKEN_SECRET: accessTokenSecret,
+  REFRESH_TOKEN_SECRET: refreshTokenSecret,
+} = config;
+
+// 회원가입 컨트롤러
 async function signUp(req, res, next) {
   try {
-    const userData = req.body;
+    const {
+      email,
+      password,
+      confirmPassword,
+      nickname,
+      profile,
+      social_login_provider,
+      social_login_id,
+      user_role,
+    } = req.body;
 
-    // 이메일 중복 검사
-    const emailExists = await User.check_if_email_exists(userData.email);
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+      });
+    }
+
+    const emailExists = await User.check_if_email_exists(email);
     if (emailExists) {
       return res.status(409).json({
         success: false,
@@ -21,11 +41,23 @@ async function signUp(req, res, next) {
     }
 
     // 유저 생성
-    const newUser = await User.create(userData);
+    const newUser = await User.create({
+      email,
+      password,
+      nickname,
+      profile,
+      social_login_provider,
+      social_login_id,
+      user_role,
+    });
+
+    const userToReturn = newUser.toJSON();
+    delete userToReturn.password; // 비밀번호는 응답에서 제외
+
     return res.status(201).json({
       success: true,
       message: "회원가입이 성공적으로 완료되었습니다.",
-      user: newUser,
+      user: userToReturn,
     });
   } catch (error) {
     next(error);
@@ -83,25 +115,82 @@ async function getAllUsers(req, res, next) {
 }
 
 // 회원 정보 수정 컨트롤러
-async function updateUserInfo(req, res, next) {
-  try {
-    const userId = req.params.userId; // URL 파라미터로부터 userId 추출
-    const newUserData = req.body;
-    const requestingUserId = req.user.userId; // JWT 토큰에서 추출한 userId
+async function updateUserInfo(req, res) {
+  const userId = req.params.userId;
+  const {
+    currentPassword,
+    newPassword,
+    confirmNewPassword,
+    nickname,
+    profile,
+  } = req.body;
 
-    // 유저 정보 업데이트 서비스 호출
-    const updatedUser = await UserService.updateUserInfo(
-      userId,
-      newUserData,
-      requestingUserId
-    );
+  // 요청한 사용자 ID와 인증된 사용자 ID 비교
+  if (req.user.userId !== userId) {
+    return res.status(403).json({
+      success: false,
+      message: "자신의 정보만 수정할 수 있습니다.",
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "사용자를 찾을 수 없습니다.",
+      });
+    }
+
+    // 비밀번호 변경 로직
+    if (newPassword && confirmNewPassword) {
+      if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "새 비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+        });
+      }
+
+      if (currentPassword) {
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+          return res.status(401).json({
+            success: false,
+            message: "현재 비밀번호가 정확하지 않습니다.",
+          });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+        user.password = hashedNewPassword;
+      }
+    }
+
+    // 기타 정보 업데이트
+    if (nickname) user.nickname = nickname;
+    if (profile) user.profile = profile;
+
+    await user.save();
+
     res.status(200).json({
       success: true,
       message: "회원 정보가 성공적으로 수정되었습니다.",
-      user: updatedUser,
+      user: {
+        _id: user._id,
+        nickname: user.nickname,
+        email: user.email,
+        profile: user.profile,
+        user_role: user.user_role,
+        social_login_provider: user.social_login_provider,
+        social_login_id: user.social_login_id,
+      },
     });
   } catch (error) {
-    res.status(error.status || 500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: "서버 오류: 회원 정보 수정에 실패했습니다.",
+      error: error.message,
+    });
   }
 }
 
@@ -183,6 +272,101 @@ async function logout(req, res) {
     .json({ message: "로그아웃 되었습니다. 클라이언트에서 토큰 삭제 필요." });
 }
 
+// 카카오 로그인 및 회원 등록
+async function kakaoLogin(req, res) {
+  const { code } = req.body;
+
+  if (!code) {
+    return res.status(400).json({
+      success: false,
+      message: "인가 코드가 필요합니다.",
+    });
+  }
+
+  try {
+    // 카카오 토큰 요청
+    const tokenRequestUrl = "https://kauth.kakao.com/oauth/token";
+    const params = new URLSearchParams();
+    params.append("grant_type", "authorization_code");
+    params.append("client_id", config.kakao.clientId); // 카카오 REST API 키
+    params.append("redirect_uri", config.kakao.redirectUri); // 리디렉션 URI
+    params.append("code", code);
+
+    const tokenResponse = await axios.post(tokenRequestUrl, params.toString(), {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+
+    const { access_token } = tokenResponse.data;
+
+    // 카카오 사용자 정보 요청
+    const userInfoResponse = await axios.get(
+      "https://kapi.kakao.com/v2/user/me",
+      {
+        headers: { Authorization: `Bearer ${access_token}` },
+      }
+    );
+
+    const {
+      id,
+      kakao_account: {
+        email,
+        profile: { nickname },
+      },
+    } = userInfoResponse.data;
+
+    // 데이터베이스에서 사용자 조회 또는 생성
+    let user = await User.findOne({
+      social_login_id: id,
+      social_login_provider: "Kakao",
+    });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        nickname,
+        social_login_id: id,
+        social_login_provider: "Kakao",
+        user_role: "user",
+      });
+    }
+
+    // JWT 토큰 생성
+    const accessToken = jwt.sign(
+      { userId: user._id },
+      config.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: "15m",
+      }
+    );
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      config.REFRESH_TOKEN_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "로그인 성공",
+      accessToken,
+      refreshToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        nickname: user.nickname,
+      },
+    });
+  } catch (error) {
+    console.error("카카오 로그인 과정에서 오류 발생:", error);
+    res.status(500).json({
+      success: false,
+      message: "로그인 실패",
+      error: error.message,
+    });
+  }
+}
+
 // 토큰 갱신 컨트롤러
 async function refreshToken(req, res) {
   const { refreshToken } = req.body;
@@ -220,5 +404,7 @@ module.exports = {
   deleteUser,
   getAllUsers,
   getUserById,
+  kakaoLogin,
   refreshToken,
+  // kakaosociallogin,
 };

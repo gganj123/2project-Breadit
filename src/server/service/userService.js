@@ -1,9 +1,15 @@
 const UserModel = require("../db/repository/userRepository");
+const nodemailer = require("nodemailer");
+const emailService = require("./emailService");
+const transporter = require("../../config/transporter");
 
 // 유저 서비스 - 회원가입
 async function signUp(userData) {
   try {
     const newUser = await UserModel.create(userData);
+    // 인증 코드 생성 및 이메일 전송
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    await emailService.sendVerificationEmail(newUser.email, verificationCode);
     return newUser;
   } catch (error) {
     throw error;
@@ -87,6 +93,17 @@ async function deleteUser(userId) {
   } catch (error) {
     throw error;
   }
+}
+
+// 이메일 인증번호 전송
+async function sendVerificationEmail(email, code) {
+  const mailOptions = {
+    from: process.env.NAVER_USER,
+    to: email,
+    subject: "이메일 인증",
+    html: `<p>인증 코드: ${code}</p>`,
+  };
+  return transporter.sendMail(mailOptions);
 }
 
 module.exports = {
