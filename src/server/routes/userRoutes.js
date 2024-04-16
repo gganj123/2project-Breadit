@@ -10,12 +10,15 @@ router.delete("/:userId", authenticateToken, userController.deleteUser);
 
 // POST 요청: 로그인
 router.post("/login", userController.login);
+router.post("/login/kakao", userController.kakaoLogin);
 
 // 로그아웃 라우트
 router.post("/logout", userController.logout);
 
 // POST 요청: 회원가입
 router.post("/", userController.signUp);
+
+router.post("/refreshToken", userController.refreshToken);
 
 // PUT 요청: 회원 정보 수정
 router.put("/:userId", userController.updateUserInfo);

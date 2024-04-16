@@ -5,7 +5,8 @@ const mongoose = require("mongoose");
 const app = express();
 const errorHandler = require("../src/server/middleware/errorHandler");
 const config = require("./config/config.js");
-const { MONGO_URI, PORT } = config;
+const { MONGO_URI, PORT, kakao } = config;
+const emailRoutes = require("../src/server/routes/email");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -69,6 +70,7 @@ app.use("/api/reviews", reviewRouter);
 app.use("/api/users", userRouter);
 app.use("/api/likes", likeRouter);
 app.use("/api/bookmarks", bookmarkRouter);
+app.use("/api/email", emailRoutes);
 app.use(errorHandler);
 
 // app.listen(port, () => console.log(`Server listening on port ${port}`));
