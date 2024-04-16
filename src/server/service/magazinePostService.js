@@ -1,7 +1,6 @@
 const MagazinePost = require("../db/repository/magazinePostRepository");
 const Like = require("../db/repository/likeRepository"); // Like 모델을 가져옵니다.
 const Bookmark = require("../db/repository/bookmarkRepository");
-
 const { ObjectId } = require("mongoose").Types;
 
 // 매거진 포스트 생성
@@ -16,7 +15,7 @@ async function createMagazinePost(postData) {
 }
 
 // 모든 매거진 포스트 가져오기
-async function getAllMagazinePosts(searchQuery) {
+async function getAllMagazinePosts(searchQuery, limit) {
   try {
     let query = {};
 
@@ -32,7 +31,7 @@ async function getAllMagazinePosts(searchQuery) {
       };
     }
 
-    const posts = await MagazinePost.find(query);
+    const posts = await MagazinePost.find(query).limit(limit);
     if (!posts || posts.length === 0) {
       const error = new Error("매거진 글을 찾을 수 없습니다.");
       error.status = 404;
@@ -55,12 +54,25 @@ async function getMagazinePostById(postId) {
       error.status = 404;
       throw error;
     }
-    return post;
+
+    const like = await Like.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const bookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    const beLike = like ? true : false;
+    const beBookmark = bookmark ? true : false;
+
+    return { post, beLike, beBookmark };
   } catch (error) {
     throw error;
   }
 }
-
 // 매거진 포스트 업데이트
 async function updateMagazinePost(postId, newData) {
   const updatedPost = await MagazinePost.findByIdAndUpdate(postId, newData, {
@@ -81,12 +93,31 @@ async function deleteMagazinePost(postId) {
   const deletedPost = await MagazinePost.findByIdAndDelete(postId);
   if (!deletedPost) {
     const error = new Error(
-      "postId에 해당하는 매거진 포스트를 찾을 수 없습니다."
+      "postId에 해당하는 매거진 포스트를 찾을 수 없어 삭제할 수 없습니다."
     );
     error.status = 404;
     throw error;
   }
   return deletedPost;
+}
+
+// 매거진 선택 삭제 서비스
+async function deleteMagazinePosts(postIds) {
+  try {
+    const deletedPosts = await MagazinePost.deleteMany({
+      _id: { $in: postIds },
+    });
+
+    if (deletedPosts.deletedCount === 0) {
+      const error = new Error("삭제할 매거진 포스트가 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    return deletedPosts;
+  } catch (error) {
+    throw error;
+  }
 }
 
 // 게시물의 좋아요를 처리하는 함수
@@ -118,6 +149,31 @@ async function magazineToggleLike(user_id, post_id) {
     throw error;
   }
 }
+
+// 매거진의 북마크 토글 함수
+async function magazineToggleBookmark(user_id, post_id) {
+  try {
+    const userId = new ObjectId(user_id);
+    const postId = new ObjectId(post_id);
+
+    const existingBookmark = await Bookmark.findOne({
+      user_id: userId,
+      post_id: postId,
+    });
+
+    if (existingBookmark) {
+      await Bookmark.findOneAndRemove({ user_id: userId, post_id: postId });
+    } else {
+      await Bookmark.create({ user_id: userId, post_id: postId });
+    }
+
+    const updatedPost = await MagazinePost.findById(postId);
+    return updatedPost;
+  } catch (error) {
+    console.error("북마크 토글 중 오류 발생:", error);
+    throw error;
+  }
+}
 // 매거진 포스트의 좋아요 상태 함수
 async function getMagazinePostWithLikeStatus(post_id, user_id) {
   try {
@@ -145,6 +201,7 @@ async function getMagazinePostWithLikeStatus(post_id, user_id) {
     throw error;
   }
 }
+
 // 매거진의 북마크 상태 함수
 async function getMagazinePostWithBookmarkStatus(post_id, user_id) {
   try {
@@ -179,7 +236,9 @@ module.exports = {
   getMagazinePostById,
   updateMagazinePost,
   deleteMagazinePost,
+  deleteMagazinePosts,
   magazineToggleLike,
+  magazineToggleBookmark,
   getMagazinePostWithLikeStatus,
   getMagazinePostWithBookmarkStatus,
 };

@@ -17,7 +17,10 @@ router.get("/:searchQuery", recipeController.getAllRecipes);
 // PUT 요청: 포스트 업데이트
 router.put("/:id", recipeController.updateRecipe);
 
-// DELETE 요청: 포스트 삭제
+// 레시피 삭제 요청: DELETE /recipes/:id
 router.delete("/:id", recipeController.deleteRecipe);
+
+// DELETE 요청: 레시피 선택 삭제
+router.delete("/", recipeController.deleteRecipes);
 
 module.exports = router;

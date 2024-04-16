@@ -22,6 +22,7 @@ const postSchema = new mongoose.Schema(
     images: [String],
     thumbnail: String,
     like_count: Number,
+
     bread_id: {
       type: String,
     },
