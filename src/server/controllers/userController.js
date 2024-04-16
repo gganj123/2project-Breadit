@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const User = require("../db/repository/userRepository");
 const UserService = require("../service/userService");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const config = require("../../config/config");
 const axios = require("axios");
 
