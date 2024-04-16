@@ -6,7 +6,6 @@ const bcrypt = require("bcrypt");
 const config = require("../../config/config");
 const axios = require("axios");
 const model = require("../db/schema");
-const redirectUri = process.env.VITE_REDIRECT_URI;
 
 const {
   ACCESS_TOKEN_SECRET: accessTokenSecret,
@@ -104,7 +103,7 @@ async function getAllUsers(req, res, next) {
 
 // 회원 정보 수정 컨트롤러
 async function updateUserInfo(req, res, next) {
-  const userId = req.params.userId;
+  const userId = req.params.userId; // URL 파라미터로부터 userId 추출
   const {
     currentPassword,
     newPassword,
@@ -112,7 +111,7 @@ async function updateUserInfo(req, res, next) {
     nickname,
     profile,
   } = req.body;
-  const requestingUserId = req.user.userId;
+  const requestingUserId = req.user.userId; // JWT에서 추출한 요청자 ID
 
   if (userId !== requestingUserId) {
     return res.status(403).json({
@@ -129,6 +128,7 @@ async function updateUserInfo(req, res, next) {
         .json({ message: "사용자 정보를 찾을 수 없습니다." });
     }
 
+    // 비밀번호 변경 요청 검사
     if (newPassword || confirmNewPassword || currentPassword) {
       if (!newPassword || !confirmNewPassword || !currentPassword) {
         return res.status(400).json({
@@ -154,13 +154,14 @@ async function updateUserInfo(req, res, next) {
 
       const salt = await bcrypt.genSalt(10);
       const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-      user.password = hashedNewPassword;
+      user.password = hashedNewPassword; // 비밀번호 업데이트
     }
 
+    // 비밀번호 검증 성공 후 다른 정보 업데이트
     user.nickname = nickname || user.nickname;
     user.profile = profile || user.profile;
 
-    await user.save();
+    await user.save(); // 모든 변경 사항 저장
     res.status(200).json({
       success: true,
       message: "회원 정보가 성공적으로 수정되었습니다.",
@@ -304,8 +305,7 @@ async function kakaosociallogin(req, res, next) {
     const params = new URLSearchParams();
     params.append("grant_type", "authorization_code");
     params.append("client_id", "337cc9b1db3858ebe4a985229168765b"); // 카카오 REST API 키
-    // params.append("redirect_uri", "http://127.0.0.1:5173/auth-redirect"); // 리디렉션 URI
-    params.append("redirect_uri", redirectUri);
+    params.append("redirect_uri", "http://localhost:5173/auth-redirect"); // 리디렉션 URI
     params.append("code", code);
 
     const kakaoResponse = await axios.post(tokenRequestUrl, params.toString(), {
