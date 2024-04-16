@@ -1,11 +1,12 @@
-const mongoose = require('mongoose');
-const User = require('../db/repository/userRepository');
-const UserService = require('../service/userService');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const config = require('../../config/config');
-const axios = require('axios');
-const model = require('../db/schema');
+const mongoose = require("mongoose");
+const User = require("../db/repository/userRepository");
+const UserService = require("../service/userService");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const config = require("../../config/config");
+const axios = require("axios");
+const model = require("../db/schema");
+const redirectUri = process.env.VITE_REDIRECT_URI;
 
 const {
   ACCESS_TOKEN_SECRET: accessTokenSecret,
@@ -21,7 +22,7 @@ async function signUp(req, res, next) {
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: '비밀번호와 비밀번호 확인이 일치하지 않습니다.',
+        message: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
       });
     }
 
@@ -30,7 +31,7 @@ async function signUp(req, res, next) {
     if (emailExists) {
       return res.status(409).json({
         success: false,
-        message: '이미 사용 중인 이메일입니다.',
+        message: "이미 사용 중인 이메일입니다.",
       });
     }
 
@@ -43,7 +44,7 @@ async function signUp(req, res, next) {
     });
     return res.status(201).json({
       success: true,
-      message: '회원가입이 성공적으로 완료되었습니다.',
+      message: "회원가입이 성공적으로 완료되었습니다.",
       user: newUser,
     });
   } catch (error) {
@@ -58,9 +59,9 @@ async function getUserById(req, res, next) {
     console.log(`지정 유저 아이디: ${userId}, 타입: ${typeof userId}`);
 
     // 토큰에서 사용자 ID를 디코딩합니다.
-    const token = req.headers.authorization?.split(' ')[1]; // Bearer 토큰을 가정합니다.
+    const token = req.headers.authorization?.split(" ")[1]; // Bearer 토큰을 가정합니다.
     if (!token) {
-      return res.status(401).json({ message: '토큰이 제공되지 않았습니다.' });
+      return res.status(401).json({ message: "토큰이 제공되지 않았습니다." });
     }
 
     const decoded = jwt.verify(token, accessTokenSecret);
@@ -72,19 +73,19 @@ async function getUserById(req, res, next) {
     // 여기에서는 디코딩된 사용자 ID와 요청의 사용자 ID를 비교합니다.
     if (requestingUserId !== userId) {
       return res.status(403).json({
-        message: '접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.',
+        message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
       });
     }
 
     const user = await UserService.getUserById(userId);
     if (!user) {
-      return res.status(404).json({ message: '사용자 정보가 없습니다.' });
+      return res.status(404).json({ message: "사용자 정보가 없습니다." });
     }
 
     res.json(user);
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ message: '유효하지 않은 토큰입니다.' });
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
     }
     console.log(`Error retrieving user: ${error.message}`);
     next(error);
@@ -103,7 +104,7 @@ async function getAllUsers(req, res, next) {
 
 // 회원 정보 수정 컨트롤러
 async function updateUserInfo(req, res, next) {
-  const userId = req.params.userId; // URL 파라미터로부터 userId 추출
+  const userId = req.params.userId;
   const {
     currentPassword,
     newPassword,
@@ -111,12 +112,12 @@ async function updateUserInfo(req, res, next) {
     nickname,
     profile,
   } = req.body;
-  const requestingUserId = req.user.userId; // JWT에서 추출한 요청자 ID
+  const requestingUserId = req.user.userId;
 
   if (userId !== requestingUserId) {
     return res.status(403).json({
       success: false,
-      message: '자신의 정보만 수정할 수 있습니다.',
+      message: "자신의 정보만 수정할 수 있습니다.",
     });
   }
 
@@ -125,22 +126,21 @@ async function updateUserInfo(req, res, next) {
     if (!user) {
       return res
         .status(404)
-        .json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        .json({ message: "사용자 정보를 찾을 수 없습니다." });
     }
 
-    // 비밀번호 변경 요청 검사
     if (newPassword || confirmNewPassword || currentPassword) {
       if (!newPassword || !confirmNewPassword || !currentPassword) {
         return res.status(400).json({
           success: false,
-          message: '모든 비밀번호 관련 필드를 제공해야 합니다.',
+          message: "모든 비밀번호 관련 필드를 제공해야 합니다.",
         });
       }
 
       if (newPassword !== confirmNewPassword) {
         return res.status(400).json({
           success: false,
-          message: '새 비밀번호가 일치하지 않습니다.',
+          message: "새 비밀번호가 일치하지 않습니다.",
         });
       }
 
@@ -148,23 +148,22 @@ async function updateUserInfo(req, res, next) {
       if (!isMatch) {
         return res.status(401).json({
           success: false,
-          message: '현재 비밀번호가 정확하지 않습니다.',
+          message: "현재 비밀번호가 정확하지 않습니다.",
         });
       }
 
       const salt = await bcrypt.genSalt(10);
       const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-      user.password = hashedNewPassword; // 비밀번호 업데이트
+      user.password = hashedNewPassword;
     }
 
-    // 비밀번호 검증 성공 후 다른 정보 업데이트
     user.nickname = nickname || user.nickname;
     user.profile = profile || user.profile;
 
-    await user.save(); // 모든 변경 사항 저장
+    await user.save();
     res.status(200).json({
       success: true,
-      message: '회원 정보가 성공적으로 수정되었습니다.',
+      message: "회원 정보가 성공적으로 수정되었습니다.",
       user: user,
     });
   } catch (error) {
@@ -185,7 +184,7 @@ async function deleteUser(req, res, next) {
     if (userId !== authenticatedUserId) {
       return res.status(403).json({
         success: false,
-        message: '자신의 계정만 삭제할 수 있습니다.',
+        message: "자신의 계정만 삭제할 수 있습니다.",
       });
     }
 
@@ -194,14 +193,14 @@ async function deleteUser(req, res, next) {
     if (!deletedUser) {
       return res.status(404).json({
         success: false,
-        message: '회원 정보를 찾을 수 없습니다.',
+        message: "회원 정보를 찾을 수 없습니다.",
       });
     }
 
     // 회원 탈퇴 성공 시 응답
     res.status(200).json({
       success: true,
-      message: '회원 탈퇴가 성공적으로 완료되었습니다.',
+      message: "회원 탈퇴가 성공적으로 완료되었습니다.",
       user: deletedUser,
     });
   } catch (error) {
@@ -215,25 +214,25 @@ async function login(req, res, next) {
     const { email, password } = req.body;
     const user = await User.findByEmail(email);
     if (!user) {
-      return res.status(404).json({ message: '찾을 수 없는 회원입니다.' });
+      return res.status(404).json({ message: "찾을 수 없는 회원입니다." });
     }
 
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      return res.status(401).json({ message: '유효하지 않은 접근입니다.' });
+      return res.status(401).json({ message: "유효하지 않은 접근입니다." });
     }
 
     // ACCESS_TOKEN_SECRET과 REFRESH_TOKEN_SECRET 환경 변수 사용
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: '10s',
+      expiresIn: "15m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
-      expiresIn: '7d',
+      expiresIn: "7d",
     });
     const decodedAccessToken = jwt.verify(accessToken, accessTokenSecret);
 
     return res.status(200).json({
-      message: '로그인 되었습니다!',
+      message: "로그인 되었습니다!",
       accessToken,
       refreshToken,
       decodedAccessToken,
@@ -255,7 +254,7 @@ async function kakaoLogin(req, res) {
     } = req.body;
     let user = await User.findOne({
       social_login_id: id,
-      social_login_provider: 'Kakao',
+      social_login_provider: "Kakao",
     });
 
     if (!user) {
@@ -263,7 +262,7 @@ async function kakaoLogin(req, res) {
         email,
         nickname,
         social_login_id: id,
-        social_login_provider: 'Kakao',
+        social_login_provider: "Kakao",
       });
     }
 
@@ -271,10 +270,10 @@ async function kakaoLogin(req, res) {
     res.status(200).json({
       /* 응답 데이터 */
     });
-    console.log('카카오 로그인 성공');
+    console.log("카카오 로그인 성공");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
@@ -282,79 +281,80 @@ async function kakaoLogin(req, res) {
 async function logout(req, res) {
   return res
     .status(200)
-    .json({ message: '로그아웃 되었습니다. 클라이언트에서 토큰 삭제 필요.' });
+    .json({ message: "로그아웃 되었습니다. 클라이언트에서 토큰 삭제 필요." });
 }
 
 // !!!!!!!!!!!!!!카카오로그인!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 async function kakaosociallogin(req, res, next) {
   const { code } = req.body;
-  console.log('받은 인가 코드:', code);
-  console.log('전체 요청 본문:', req.body);
+  console.log("받은 인가 코드:", code);
+  console.log("전체 요청 본문:", req.body);
 
   if (!code) {
-    console.error('인가 코드가 요청에 포함되어 있지 않습니다.');
+    console.error("인가 코드가 요청에 포함되어 있지 않습니다.");
     return res.status(400).json({
       success: false,
-      message: '인가 코드가 필요합니다.',
+      message: "인가 코드가 필요합니다.",
     });
   }
 
   try {
     // 카카오 토큰 요청
-    const tokenRequestUrl = 'https://kauth.kakao.com/oauth/token';
+    const tokenRequestUrl = "https://kauth.kakao.com/oauth/token";
     const params = new URLSearchParams();
-    params.append('grant_type', 'authorization_code');
-    params.append('client_id', '337cc9b1db3858ebe4a985229168765b'); // 카카오 REST API 키
-    params.append('redirect_uri', 'http://127.0.0.1:5173/auth-redirect'); // 리디렉션 URI
-    params.append('code', code);
+    params.append("grant_type", "authorization_code");
+    params.append("client_id", "337cc9b1db3858ebe4a985229168765b"); // 카카오 REST API 키
+    // params.append("redirect_uri", "http://127.0.0.1:5173/auth-redirect"); // 리디렉션 URI
+    params.append("redirect_uri", redirectUri);
+    params.append("code", code);
 
     const kakaoResponse = await axios.post(tokenRequestUrl, params.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
     const { access_token } = kakaoResponse.data;
-    console.log('카카오 액세스 토큰:', access_token);
+    console.log("카카오 액세스 토큰:", access_token);
 
     // 카카오 사용자 정보 요청
     const userInfoResponse = await axios.get(
-      'https://kapi.kakao.com/v2/user/me',
+      "https://kapi.kakao.com/v2/user/me",
       {
         headers: { Authorization: `Bearer ${access_token}` },
       }
     );
 
     const userInfo = userInfoResponse.data;
-    console.log('카카오 사용자 정보:', userInfo);
+    console.log("카카오 사용자 정보:", userInfo);
 
     // 데이터베이스에서 사용자 조회 또는 생성
     let user = await model.user.findOne({
       social_login_id: userInfo.id,
-      social_login_provider: 'Kakao',
+      social_login_provider: "Kakao",
     });
 
     if (!user) {
-      console.log('유저 등록 되어 있지 않음, 생성 시작');
+      console.log("유저 등록 되어 있지 않음, 생성 시작");
       user = await model.user.create({
         email: userInfo.kakao_account.email,
         nickname: userInfo.kakao_account.profile.nickname,
         social_login_id: userInfo.id,
-        social_login_provider: 'Kakao',
-        content_type: 'Kakao',
+        social_login_provider: "Kakao",
+        content_type: "Kakao",
       });
       console.log(`유저 없음 회원 등록 성공 ${user}`);
     }
     console.log(`유저 있음 ${user}`);
     // JWT 토큰 생성
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: '10s',
+      expiresIn: "15m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
-      expiresIn: '7d',
+      expiresIn: "7d",
     });
 
     res.json({
       success: true,
-      message: '로그인 성공',
+      message: "로그인 성공",
       accessToken,
       refreshToken,
       user: {
@@ -364,10 +364,10 @@ async function kakaosociallogin(req, res, next) {
       },
     });
   } catch (error) {
-    console.error('카카오 로그인 과정에서 오류 발생:', error);
+    console.error("카카오 로그인 과정에서 오류 발생:", error);
     res.status(500).json({
       success: false,
-      message: '로그인 실패',
+      message: "로그인 실패",
       error: error.message,
     });
   }
@@ -377,22 +377,22 @@ async function kakaosociallogin(req, res, next) {
 async function refreshToken(req, res) {
   const { refreshToken } = req.body;
   if (!refreshToken) {
-    console.error('Refresh Token not provided');
-    return res.status(401).json({ message: 'Refresh Token is required' });
+    console.error("Refresh Token not provided");
+    return res.status(401).json({ message: "Refresh Token is required" });
   }
 
   try {
     // 리프레시 토큰을 검증합니다.
     const decoded = jwt.verify(refreshToken, refreshTokenSecret);
     if (!decoded) {
-      return res.status(403).json({ message: 'Invalid refresh token' });
+      return res.status(403).json({ message: "Invalid refresh token" });
     }
 
     const userId = decoded.userId; // 토큰에서 사용자 ID 추출
 
     // 새 액세스 토큰 발급
     const accessToken = jwt.sign({ userId: userId }, accessTokenSecret, {
-      expiresIn: '15m', // 액세스 토큰 만료 시간
+      expiresIn: "15m", // 액세스 토큰 만료 시간
     });
 
     // 갱신된 액세스 토큰과 사용자 ID를 응답으로 보냅니다.
@@ -402,7 +402,7 @@ async function refreshToken(req, res) {
     });
   } catch (error) {
     console.error(`Token validation failed: ${error.message}`);
-    return res.status(403).json({ message: 'Invalid token' });
+    return res.status(403).json({ message: "Invalid token" });
   }
 }
 
