@@ -93,7 +93,7 @@ async function deletePost(postId) {
   const deletedPost = await Post.findByIdAndDelete(postId);
   if (!deletedPost) {
     const error = new Error(
-      "postId에 해당하는 포스트를 찾을 수 없어 삭제할 수 없습니다."
+      "postId에 해당하는 추천 포스트를 찾을 수 없어 삭제할 수 없습니다."
     );
     error.status = 404;
     throw error;
@@ -109,7 +109,7 @@ async function deletePosts(postIds) {
     });
 
     if (deletedPosts.deletedCount === 0) {
-      const error = new Error("삭제할 포스트가 없습니다.");
+      const error = new Error("삭제할 추천 포스트가 없습니다.");
       error.status = 404;
       throw error;
     }

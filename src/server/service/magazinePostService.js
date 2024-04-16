@@ -93,7 +93,7 @@ async function deleteMagazinePost(postId) {
   const deletedPost = await MagazinePost.findByIdAndDelete(postId);
   if (!deletedPost) {
     const error = new Error(
-      "postId에 해당하는 매거진 포스트를 찾을 수 없습니다."
+      "postId에 해당하는 매거진 포스트를 찾을 수 없어 삭제할 수 없습니다."
     );
     error.status = 404;
     throw error;
