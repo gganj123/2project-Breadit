@@ -92,6 +92,7 @@ async function getRecipeById(req, res, next) {
     next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
+
 // 레시피 업데이트 컨트롤러
 async function updateRecipe(req, res, next) {
   try {

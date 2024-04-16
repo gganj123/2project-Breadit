@@ -84,6 +84,7 @@ async function getMagazinePostById(req, res, next) {
     next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
+
 // 매거진 포스트 업데이트 컨트롤러
 async function updateMagazinePost(req, res, next) {
   try {
