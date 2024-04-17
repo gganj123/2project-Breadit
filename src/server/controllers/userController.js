@@ -72,6 +72,12 @@ async function sendEmailVerification(req, res) {
   const verificationCode = Math.floor(100000 + Math.random() * 900000);
   const expirationTime = 3; // 유효 시간 (분)
 
+  // 종료 시점 계산
+  const currentTime = new Date();
+  const expirationDate = new Date(
+    currentTime.getTime() + expirationTime * 60000
+  ); // 종료 시점
+
   // 이메일 전송
   try {
     await transporter.sendMail({
@@ -81,12 +87,13 @@ async function sendEmailVerification(req, res) {
       html: `<p>귀하의 인증 코드는 ${verificationCode}입니다. 이 코드는 ${expirationTime}분 동안 유효합니다.</p>`,
     });
 
-    // 인증 코드와 유효 시간을 응답으로 보냄
+    // 인증 코드와 유효 시간, 종료 시점을 응답으로 보냄
     res.status(200).json({
       success: true,
       message: "인증 코드가 이메일로 전송되었습니다.",
       verificationCode, // 실제로는 코드를 클라이언트에게 보내지 않습니다. 예시를 위해 포함했습니다.
-      expires_in: expirationTime,
+      expires_in: expirationTime, // 이 값은 클라이언트에서 기대하는 유효 시간입니다.
+      expirationTimestamp: expirationDate.toISOString(), // ISO 형식의 종료 시점
     });
   } catch (error) {
     console.error("Email sending failed:", error);
