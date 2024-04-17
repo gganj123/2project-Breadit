@@ -26,31 +26,28 @@ async function createMagazinePost(req, res, next) {
     next(error);
   }
 }
-
+// 모든 매거진 포스트를 가져오는 컨트롤러
 async function getAllMagazinePostsController(req, res, next) {
   try {
-    let page = req.query.page ? parseInt(req.query.page) : 1; // 페이지 번호를 가져오고 기본값으로 1 설정
-    let limit = req.query.limit ? parseInt(req.query.limit) : 10; // 페이지 크기를 가져오고 기본값으로 10 설정
     let searchQuery = req.query.q || null;
+    let limit = req.query.limit ? parseInt(req.query.limit) : null;
+    let sortBy = req.query.sort || null;
 
-    const posts = await magazineService.getAllMagazinePosts(
+    // 매거진 포스트 서비스를 통해 매거진 포스트를 가져옵니다.
+    const magazinePosts = await magazineService.getAllMagazinePosts(
       searchQuery,
-      page,
-      limit
+      limit,
+      sortBy
     );
 
-    // 페이지 정보를 추가하여 응답
-    res.json({
-      page,
-      limit,
-      totalPages: posts.totalPages,
-      totalCount: posts.totalCount,
-      data: posts.posts,
-    });
+    // 클라이언트에게 매거진 포스트를 반환합니다.
+    res.json(magazinePosts);
   } catch (error) {
+    // 오류가 발생한 경우 오류를 처리합니다.
     next(error);
   }
 }
+
 // 특정 매거진 포스트 가져오기 컨트롤러
 async function getMagazinePostById(req, res, next) {
   const postId = req.params.id; // 요청에서 postId 파라미터 추출
