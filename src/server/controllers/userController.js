@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const config = require("../../config/config");
 const axios = require("axios");
 const model = require("../db/schema");
+const transporter = require("../../config/transporter");
 const redirectUri = process.env.VITE_REDIRECT_URI;
 
 const {
@@ -16,24 +17,17 @@ const {
 // 회원가입 컨트롤러
 async function signUp(req, res, next) {
   try {
-    const { email, password, confirmPassword, nickname, profile } = req.body;
-
-    // 비밀번호와 비밀번호 확인이 일치하는지 검사
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
-      });
-    }
+    const { email, password, confirmPassword, nickname, profile, user_role } =
+      req.body;
 
     // 이메일 중복 검사
-    const emailExists = await User.check_if_email_exists(email);
-    if (emailExists) {
-      return res.status(409).json({
-        success: false,
-        message: "이미 사용 중인 이메일입니다.",
-      });
-    }
+    // const emailExists = await User.check_if_email_exists(email);
+    // if (emailExists) {
+    //   return res.status(409).json({
+    //     success: false,
+    //     message: "이미 사용 중인 이메일입니다.",
+    //   });
+    // }
 
     // 유저 생성
     const newUser = await User.create({
@@ -41,6 +35,7 @@ async function signUp(req, res, next) {
       password, // 비밀번호는 해싱 처리하는 것으로 가정
       nickname,
       profile,
+      user_role, // user_role 추가
     });
     return res.status(201).json({
       success: true,
@@ -49,6 +44,56 @@ async function signUp(req, res, next) {
     });
   } catch (error) {
     next(error);
+  }
+}
+
+// 이메일 인증 코드 발송 함수
+async function sendEmailVerification(req, res) {
+  const { email } = req.body;
+
+  // 이메일 중복 검사
+  const emailExists = await User.check_if_email_exists(email);
+  if (emailExists) {
+    return res.status(409).json({
+      success: false,
+      message: "이미 가입된 회원입니다.",
+    });
+  }
+
+  // 인증 코드 생성
+  const verificationCode = Math.floor(100000 + Math.random() * 900000);
+  const expirationTime = 3; // 유효 시간 (분)
+
+  // 종료 시점 계산
+  const currentTime = new Date();
+  const expirationDate = new Date(
+    currentTime.getTime() + expirationTime * 60000
+  ); // 종료 시점
+
+  // 이메일 전송
+  try {
+    await transporter.sendMail({
+      from: process.env.NAVER_USER,
+      to: email,
+      subject: "이메일 인증 코드",
+      html: `<p>귀하의 인증 코드는 ${verificationCode}입니다. 이 코드는 ${expirationTime}분 동안 유효합니다.</p>`,
+    });
+
+    // 인증 코드와 유효 시간, 종료 시점을 응답으로 보냄
+    res.status(200).json({
+      success: true,
+      message: "인증 코드가 이메일로 전송되었습니다.",
+      verificationCode, // 실제로는 코드를 클라이언트에게 보내지 않습니다. 예시를 위해 포함했습니다.
+      expires_in: expirationTime, // 이 값은 클라이언트에서 기대하는 유효 시간입니다.
+      expirationTimestamp: expirationDate.toISOString(), // ISO 형식의 종료 시점
+    });
+  } catch (error) {
+    console.error("Email sending failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "이메일 전송에 실패했습니다.",
+      error: error.message,
+    });
   }
 }
 
@@ -104,15 +149,9 @@ async function getAllUsers(req, res, next) {
 
 // 회원 정보 수정 컨트롤러
 async function updateUserInfo(req, res, next) {
-  const userId = req.params.userId; // URL 파라미터로부터 userId 추출
-  const {
-    currentPassword,
-    newPassword,
-    confirmNewPassword,
-    nickname,
-    profile,
-  } = req.body;
-  const requestingUserId = req.user.userId; // JWT에서 추출한 요청자 ID
+  const userId = req.params.userId;
+  const { newPassword, nickname, profile } = req.body;
+  const requestingUserId = req.user.userId;
 
   if (userId !== requestingUserId) {
     return res.status(403).json({
@@ -129,40 +168,16 @@ async function updateUserInfo(req, res, next) {
         .json({ message: "사용자 정보를 찾을 수 없습니다." });
     }
 
-    // 비밀번호 변경 요청 검사
-    if (newPassword || confirmNewPassword || currentPassword) {
-      if (!newPassword || !confirmNewPassword || !currentPassword) {
-        return res.status(400).json({
-          success: false,
-          message: "모든 비밀번호 관련 필드를 제공해야 합니다.",
-        });
-      }
-
-      if (newPassword !== confirmNewPassword) {
-        return res.status(400).json({
-          success: false,
-          message: "새 비밀번호가 일치하지 않습니다.",
-        });
-      }
-
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) {
-        return res.status(401).json({
-          success: false,
-          message: "현재 비밀번호가 정확하지 않습니다.",
-        });
-      }
-
-      const salt = await bcrypt.genSalt(10);
-      const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-      user.password = hashedNewPassword; // 비밀번호 업데이트
+    if (newPassword && newPassword.trim()) {
+      // const salt = await bcrypt.genSalt(10);
+      // const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+      user.password = newPassword;
     }
 
-    // 비밀번호 검증 성공 후 다른 정보 업데이트
     user.nickname = nickname || user.nickname;
     user.profile = profile || user.profile;
 
-    await user.save(); // 모든 변경 사항 저장
+    await user.save();
     res.status(200).json({
       success: true,
       message: "회원 정보가 성공적으로 수정되었습니다.",
@@ -226,11 +241,13 @@ async function login(req, res, next) {
 
     // ACCESS_TOKEN_SECRET과 REFRESH_TOKEN_SECRET 환경 변수 사용
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "10s",
+      expiresIn: "15m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
     });
+
+    // 디코드된 액세스 토큰을 반환하여 클라이언트에서 사용할 수 있도록 함
     const decodedAccessToken = jwt.verify(accessToken, accessTokenSecret);
 
     return res.status(200).json({
@@ -240,7 +257,44 @@ async function login(req, res, next) {
       decodedAccessToken,
     });
   } catch (error) {
+    console.error(`로그인 오류: ${error}`); // 오류 로그를 한국어로 추가
     return next(error);
+  }
+}
+
+// 비밀번호 검증 컨트롤러
+async function verifyPassword(req, res, next) {
+  const userId = req.params.userId;
+  const { password } = req.body;
+  const requestingUserId = req.user.userId;
+
+  if (userId !== requestingUserId) {
+    return res.status(403).json({
+      success: false,
+      message: "자신의 정보만 검증할 수 있습니다.",
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "사용자 정보를 찾을 수 없습니다." });
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "비밀번호 검증 성공",
+    });
+  } catch (error) {
+    console.error("Error verifying password: ", error);
+    res.status(500).json({ message: error.message });
   }
 }
 
@@ -347,7 +401,7 @@ async function kakaosociallogin(req, res, next) {
     console.log(`유저 있음 ${user}`);
     // JWT 토큰 생성
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "10s",
+      expiresIn: "15m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
@@ -409,12 +463,14 @@ async function refreshToken(req, res) {
 
 module.exports = {
   signUp,
+  sendEmailVerification,
   login,
   logout,
   updateUserInfo,
   deleteUser,
   getAllUsers,
   getUserById,
+  verifyPassword,
   kakaoLogin,
   refreshToken,
   kakaosociallogin,
