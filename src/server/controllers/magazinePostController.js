@@ -26,19 +26,24 @@ async function createMagazinePost(req, res, next) {
     next(error);
   }
 }
-
+// 모든 매거진 포스트를 가져오는 컨트롤러
 async function getAllMagazinePostsController(req, res, next) {
   try {
     let searchQuery = req.query.q || null;
-    let limit = req.query.limit ? parseInt(req.query.limit) : 10; // 페이지 크기를 가져오고 기본값으로 10 설정
+    let limit = req.query.limit ? parseInt(req.query.limit) : null;
+    let sortBy = req.query.sort || null;
 
+    // 매거진 포스트 서비스를 통해 매거진 포스트를 가져옵니다.
     const magazinePosts = await magazineService.getAllMagazinePosts(
       searchQuery,
-      limit
+      limit,
+      sortBy
     );
 
+    // 클라이언트에게 매거진 포스트를 반환합니다.
     res.json(magazinePosts);
   } catch (error) {
+    // 오류가 발생한 경우 오류를 처리합니다.
     next(error);
   }
 }

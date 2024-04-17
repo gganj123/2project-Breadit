@@ -15,8 +15,8 @@ async function createMagazinePost(postData) {
 }
 
 //모든 매거진 포스트 가져오기
-async function getAllMagazinePosts(searchQuery, limit) {
-  // limit 매개변수 추가
+async function getAllMagazinePosts(searchQuery, limit, sortBy) {
+  // limit와 sortBy 매개변수 추가
   try {
     let query = {};
 
@@ -32,7 +32,15 @@ async function getAllMagazinePosts(searchQuery, limit) {
       };
     }
 
-    const magazinePosts = await MagazinePost.find(query).limit(limit); // limit 매개변수 사용
+    let sortOptions = {}; // 정렬 옵션을 저장할 객체를 초기화합니다.
+    if (sortBy === "like_count") {
+      sortOptions = { like_count: -1 }; // like_count가 높은 순으로 정렬합니다.
+    }
+
+    const magazinePosts = await MagazinePost.find(query)
+      .sort(sortOptions) // 정렬 옵션을 적용합니다.
+      .limit(limit); // limit 매개변수 사용
+
     if (!magazinePosts || magazinePosts.length === 0) {
       const error = new Error("매거진 포스트를 찾을 수 없습니다.");
       error.status = 404;
