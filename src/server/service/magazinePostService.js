@@ -84,9 +84,9 @@ async function getMagazinePostById(postId) {
 }
 
 //유저 아이디로 매거진포스트 가져오기
-async function getUserMagazinePosts(userId, searchQuery, page, limit) {
+async function getUserMagazinePosts(user_id, searchQuery, page, limit) {
   try {
-    let query = { userId };
+    let query = { user_id }; // 수정: userId -> user_id
 
     if (searchQuery) {
       const regex = new RegExp(searchQuery, "i");
@@ -99,7 +99,7 @@ async function getUserMagazinePosts(userId, searchQuery, page, limit) {
             { nickname: { $regex: regex } },
           ],
         },
-        { userId },
+        { user_id }, // 수정: userId -> user_id
       ];
     }
 

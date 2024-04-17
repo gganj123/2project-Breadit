@@ -25,8 +25,8 @@ async function getAllRecipes(searchQuery, limit, sortBy) {
       query = {
         $or: [
           { title: { $regex: regex } },
-          { content: { $regex: regex } },
-          { nickname: { $regex: regex } },
+          { ingredients: { $regex: regex } },
+          { chef: { $regex: regex } },
         ],
       };
     }
@@ -80,9 +80,10 @@ async function getRecipeById(postId) {
   }
 }
 
-async function getUserRecipes(userId, searchQuery, page, limit) {
+//유저아이디로 레시피 조회
+async function getUserRecipes(user_id, searchQuery, page, limit) {
   try {
-    let query = { userId };
+    let query = { user_id };
 
     if (searchQuery) {
       const regex = new RegExp(searchQuery, "i");
@@ -95,7 +96,7 @@ async function getUserRecipes(userId, searchQuery, page, limit) {
             { nickname: { $regex: regex } },
           ],
         },
-        { userId },
+        { user_id },
       ];
     }
 

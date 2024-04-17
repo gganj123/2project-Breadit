@@ -74,9 +74,9 @@ async function getPostById(postId) {
 }
 
 //유저아이디로 포스트 조회
-async function getUserPosts(userId, searchQuery, page, limit) {
+async function getUserPosts(user_id, searchQuery, page, limit) {
   try {
-    let query = { userId };
+    let query = { user_id };
 
     if (searchQuery) {
       const regex = new RegExp(searchQuery, "i");
@@ -89,7 +89,7 @@ async function getUserPosts(userId, searchQuery, page, limit) {
             { nickname: { $regex: regex } },
           ],
         },
-        { userId },
+        { user_id },
       ];
     }
 

@@ -60,9 +60,6 @@ module.exports = {
       images: Joi.string().error(
         () => new Error("이미지를 올바르게 입력해주세요.")
       ),
-      bread_id: Joi.string().error(
-        () => new Error("빵집데이터 ID는 필수입니다.")
-      ),
       instagram_info: Joi.string(),
     });
 
