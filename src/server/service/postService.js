@@ -205,7 +205,11 @@ async function postToggleBookmark(user_id, post_id) {
     if (existingBookmark) {
       await Bookmark.findOneAndRemove({ user_id: userId, post_id: postId });
     } else {
-      await Bookmark.create({ user_id: userId, post_id: postId });
+      await Bookmark.create({
+        user_id: userId,
+        post_id: postId,
+        location: "posts",
+      });
     }
 
     const updatedPost = await Post.findById(postId);

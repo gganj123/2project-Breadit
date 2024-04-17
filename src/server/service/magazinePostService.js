@@ -217,7 +217,11 @@ async function magazineToggleBookmark(user_id, post_id) {
     if (existingBookmark) {
       await Bookmark.findOneAndRemove({ user_id: userId, post_id: postId });
     } else {
-      await Bookmark.create({ user_id: userId, post_id: postId });
+      await Bookmark.create({
+        user_id: userId,
+        post_id: postId,
+        location: "magazines",
+      });
     }
 
     const updatedPost = await MagazinePost.findById(postId);

@@ -55,8 +55,39 @@ async function getAllPostsFromBookmarks(user_id) {
     const posts = await Post.find({ _id: { $in: postIds } });
     const recipes = await Recipe.find({ _id: { $in: postIds } });
 
-    // 가져온 데이터들을 하나의 배열로 합치기
-    const allPosts = [...magazinePosts, ...posts, ...recipes];
+    // 북마크 데이터의 location을 각 게시물 객체에 추가
+    const allPosts = magazinePosts
+      .map((post) => {
+        const bookmark = bookmarks.find(
+          (bookmark) => String(bookmark.post_id) === String(post._id)
+        );
+        if (bookmark) {
+          return { ...post.toObject(), location: bookmark.location };
+        }
+        return post.toObject();
+      })
+      .concat(
+        posts.map((post) => {
+          const bookmark = bookmarks.find(
+            (bookmark) => String(bookmark.post_id) === String(post._id)
+          );
+          if (bookmark) {
+            return { ...post.toObject(), location: bookmark.location };
+          }
+          return post.toObject();
+        })
+      )
+      .concat(
+        recipes.map((post) => {
+          const bookmark = bookmarks.find(
+            (bookmark) => String(bookmark.post_id) === String(post._id)
+          );
+          if (bookmark) {
+            return { ...post.toObject(), location: bookmark.location };
+          }
+          return post.toObject();
+        })
+      );
 
     return allPosts;
   } catch (error) {

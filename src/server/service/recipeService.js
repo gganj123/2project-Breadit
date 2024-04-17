@@ -218,7 +218,11 @@ async function recipeToggleBookmark(user_id, recipe_id) {
     if (existingBookmark) {
       await Bookmark.findOneAndRemove({ user_id: userId, post_id: recipeId });
     } else {
-      await Bookmark.create({ user_id: userId, post_id: recipeId });
+      await Bookmark.create({
+        user_id: userId,
+        post_id: recipeId,
+        location: "recipes",
+      });
     }
 
     const updatedRecipe = await Recipe.findById(recipeId);
