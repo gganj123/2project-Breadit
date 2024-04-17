@@ -225,7 +225,7 @@ async function login(req, res, next) {
 
     // ACCESS_TOKEN_SECRET과 REFRESH_TOKEN_SECRET 환경 변수 사용
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "10s",
+      expiresIn: "15m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
@@ -346,7 +346,7 @@ async function kakaosociallogin(req, res, next) {
     console.log(`유저 있음 ${user}`);
     // JWT 토큰 생성
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "10s",
+      expiresIn: "15m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",

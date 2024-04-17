@@ -26,8 +26,8 @@ async function getAllPosts(searchQuery, limit) {
       query = {
         $or: [
           { title: { $regex: regex } },
-          { ingredients: { $regex: regex } },
-          { chef: { $regex: regex } },
+          { content: { $regex: regex } },
+          { nickname: { $regex: regex } },
         ],
       };
     }
