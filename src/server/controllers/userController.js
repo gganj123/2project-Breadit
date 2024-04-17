@@ -29,13 +29,13 @@ async function signUp(req, res, next) {
     }
 
     // 이메일 중복 검사
-    const emailExists = await User.check_if_email_exists(email);
-    if (emailExists) {
-      return res.status(409).json({
-        success: false,
-        message: "이미 사용 중인 이메일입니다.",
-      });
-    }
+    // const emailExists = await User.check_if_email_exists(email);
+    // if (emailExists) {
+    //   return res.status(409).json({
+    //     success: false,
+    //     message: "이미 사용 중인 이메일입니다.",
+    //   });
+    // }
 
     // 유저 생성
     const newUser = await User.create({
@@ -157,15 +157,9 @@ async function getAllUsers(req, res, next) {
 
 // 회원 정보 수정 컨트롤러
 async function updateUserInfo(req, res, next) {
-  const userId = req.params.userId; // URL 파라미터로부터 userId 추출
-  const {
-    currentPassword,
-    newPassword,
-    confirmNewPassword,
-    nickname,
-    profile,
-  } = req.body;
-  const requestingUserId = req.user.userId; // JWT에서 추출한 요청자 ID
+  const userId = req.params.userId;
+  const { newPassword, nickname, profile } = req.body;
+  const requestingUserId = req.user.userId;
 
   if (userId !== requestingUserId) {
     return res.status(403).json({
@@ -182,40 +176,16 @@ async function updateUserInfo(req, res, next) {
         .json({ message: "사용자 정보를 찾을 수 없습니다." });
     }
 
-    // 비밀번호 변경 요청 검사
-    if (newPassword || confirmNewPassword || currentPassword) {
-      if (!newPassword || !confirmNewPassword || !currentPassword) {
-        return res.status(400).json({
-          success: false,
-          message: "모든 비밀번호 관련 필드를 제공해야 합니다.",
-        });
-      }
-
-      if (newPassword !== confirmNewPassword) {
-        return res.status(400).json({
-          success: false,
-          message: "새 비밀번호가 일치하지 않습니다.",
-        });
-      }
-
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) {
-        return res.status(401).json({
-          success: false,
-          message: "현재 비밀번호가 정확하지 않습니다.",
-        });
-      }
-
+    if (newPassword && newPassword.trim()) {
       const salt = await bcrypt.genSalt(10);
       const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-      user.password = hashedNewPassword; // 비밀번호 업데이트
+      user.password = hashedNewPassword;
     }
 
-    // 비밀번호 검증 성공 후 다른 정보 업데이트
     user.nickname = nickname || user.nickname;
     user.profile = profile || user.profile;
 
-    await user.save(); // 모든 변경 사항 저장
+    await user.save();
     res.status(200).json({
       success: true,
       message: "회원 정보가 성공적으로 수정되었습니다.",
@@ -284,6 +254,8 @@ async function login(req, res, next) {
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
     });
+
+    // 디코드된 액세스 토큰을 반환하여 클라이언트에서 사용할 수 있도록 함
     const decodedAccessToken = jwt.verify(accessToken, accessTokenSecret);
 
     return res.status(200).json({
@@ -293,6 +265,7 @@ async function login(req, res, next) {
       decodedAccessToken,
     });
   } catch (error) {
+    console.error(`로그인 오류: ${error}`); // 오류 로그를 한국어로 추가
     return next(error);
   }
 }
