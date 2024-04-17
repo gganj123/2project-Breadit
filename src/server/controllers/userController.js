@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const config = require("../../config/config");
 const axios = require("axios");
 const model = require("../db/schema");
+const redirectUri = process.env.VITE_REDIRECT_URI;
 
 const {
   ACCESS_TOKEN_SECRET: accessTokenSecret,
@@ -305,7 +306,7 @@ async function kakaosociallogin(req, res, next) {
     const params = new URLSearchParams();
     params.append("grant_type", "authorization_code");
     params.append("client_id", "337cc9b1db3858ebe4a985229168765b"); // 카카오 REST API 키
-    params.append("redirect_uri", "http://localhost:5173/auth-redirect"); // 리디렉션 URI
+    params.append("redirect_uri", redirectUri); // 리디렉션 URI
     params.append("code", code);
 
     const kakaoResponse = await axios.post(tokenRequestUrl, params.toString(), {
