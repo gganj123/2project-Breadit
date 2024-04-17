@@ -6,6 +6,8 @@ const bcrypt = require("bcrypt");
 const config = require("../../config/config");
 const axios = require("axios");
 const model = require("../db/schema");
+const transporter = require("../../config/transporter");
+const redirectUri = process.env.VITE_REDIRECT_URI;
 
 const {
   ACCESS_TOKEN_SECRET: accessTokenSecret,
@@ -15,7 +17,8 @@ const {
 // 회원가입 컨트롤러
 async function signUp(req, res, next) {
   try {
-    const { email, password, confirmPassword, nickname, profile } = req.body;
+    const { email, password, confirmPassword, nickname, profile, user_role } =
+      req.body;
 
     // 비밀번호와 비밀번호 확인이 일치하는지 검사
     if (password !== confirmPassword) {
@@ -40,6 +43,7 @@ async function signUp(req, res, next) {
       password, // 비밀번호는 해싱 처리하는 것으로 가정
       nickname,
       profile,
+      user_role, // user_role 추가
     });
     return res.status(201).json({
       success: true,
@@ -48,6 +52,49 @@ async function signUp(req, res, next) {
     });
   } catch (error) {
     next(error);
+  }
+}
+
+// 이메일 인증 코드 발송 함수
+async function sendEmailVerification(req, res) {
+  const { email } = req.body;
+
+  // 이메일 중복 검사
+  const emailExists = await User.check_if_email_exists(email);
+  if (emailExists) {
+    return res.status(409).json({
+      success: false,
+      message: "이미 가입된 회원입니다.",
+    });
+  }
+
+  // 인증 코드 생성
+  const verificationCode = Math.floor(100000 + Math.random() * 900000);
+  const expirationTime = 3; // 유효 시간 (분)
+
+  // 이메일 전송
+  try {
+    await transporter.sendMail({
+      from: process.env.NAVER_USER,
+      to: email,
+      subject: "이메일 인증 코드",
+      html: `<p>귀하의 인증 코드는 ${verificationCode}입니다. 이 코드는 ${expirationTime}분 동안 유효합니다.</p>`,
+    });
+
+    // 인증 코드와 유효 시간을 응답으로 보냄
+    res.status(200).json({
+      success: true,
+      message: "인증 코드가 이메일로 전송되었습니다.",
+      verificationCode, // 실제로는 코드를 클라이언트에게 보내지 않습니다. 예시를 위해 포함했습니다.
+      expires_in: expirationTime,
+    });
+  } catch (error) {
+    console.error("Email sending failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "이메일 전송에 실패했습니다.",
+      error: error.message,
+    });
   }
 }
 
@@ -243,6 +290,42 @@ async function login(req, res, next) {
   }
 }
 
+// 비밀번호 검증 컨트롤러
+async function verifyPassword(req, res, next) {
+  const userId = req.params.userId;
+  const { password } = req.body;
+  const requestingUserId = req.user.userId;
+
+  if (userId !== requestingUserId) {
+    return res.status(403).json({
+      success: false,
+      message: "자신의 정보만 검증할 수 있습니다.",
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "사용자 정보를 찾을 수 없습니다." });
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "비밀번호 검증 성공",
+    });
+  } catch (error) {
+    console.error("Error verifying password: ", error);
+    res.status(500).json({ message: error.message });
+  }
+}
+
 // 카카오 로그인
 async function kakaoLogin(req, res) {
   try {
@@ -305,7 +388,7 @@ async function kakaosociallogin(req, res, next) {
     const params = new URLSearchParams();
     params.append("grant_type", "authorization_code");
     params.append("client_id", "337cc9b1db3858ebe4a985229168765b"); // 카카오 REST API 키
-    params.append("redirect_uri", "http://localhost:5173/auth-redirect"); // 리디렉션 URI
+    params.append("redirect_uri", redirectUri); // 리디렉션 URI
     params.append("code", code);
 
     const kakaoResponse = await axios.post(tokenRequestUrl, params.toString(), {
@@ -408,12 +491,14 @@ async function refreshToken(req, res) {
 
 module.exports = {
   signUp,
+  sendEmailVerification,
   login,
   logout,
   updateUserInfo,
   deleteUser,
   getAllUsers,
   getUserById,
+  verifyPassword,
   kakaoLogin,
   refreshToken,
   kakaosociallogin,

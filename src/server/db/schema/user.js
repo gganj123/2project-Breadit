@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   },
   user_role: {
     type: String,
-    default: "user",
+    default: "",
   },
   social_login_provider: {
     type: String,
