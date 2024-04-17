@@ -20,14 +20,6 @@ async function signUp(req, res, next) {
     const { email, password, confirmPassword, nickname, profile, user_role } =
       req.body;
 
-    // 비밀번호와 비밀번호 확인이 일치하는지 검사
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
-      });
-    }
-
     // 이메일 중복 검사
     // const emailExists = await User.check_if_email_exists(email);
     // if (emailExists) {
@@ -177,9 +169,9 @@ async function updateUserInfo(req, res, next) {
     }
 
     if (newPassword && newPassword.trim()) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-      user.password = hashedNewPassword;
+      // const salt = await bcrypt.genSalt(10);
+      // const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+      user.password = newPassword;
     }
 
     user.nickname = nickname || user.nickname;
