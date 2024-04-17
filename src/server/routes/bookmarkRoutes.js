@@ -45,4 +45,7 @@ router.post(
 // 추천포스트 북마크 토글 라우터
 router.post("/postbooktoggle", postController.postToggleBookmarkController);
 
+// 특정 사용자의 북마크에 연결된 모든 magazinePost를 가져오는 미들웨어
+router.get("/:user_id", bookmarkController.getAllPostsFromBookmarksController);
+
 module.exports = router;
