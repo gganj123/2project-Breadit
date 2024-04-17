@@ -29,28 +29,20 @@ async function createMagazinePost(req, res, next) {
 
 async function getAllMagazinePostsController(req, res, next) {
   try {
-    let page = req.query.page ? parseInt(req.query.page) : 1; // 페이지 번호를 가져오고 기본값으로 1 설정
-    let limit = req.query.limit ? parseInt(req.query.limit) : 10; // 페이지 크기를 가져오고 기본값으로 10 설정
     let searchQuery = req.query.q || null;
+    let limit = req.query.limit ? parseInt(req.query.limit) : 10; // 페이지 크기를 가져오고 기본값으로 10 설정
 
-    const posts = await magazineService.getAllMagazinePosts(
+    const magazinePosts = await magazineService.getAllMagazinePosts(
       searchQuery,
-      page,
       limit
     );
 
-    // 페이지 정보를 추가하여 응답
-    res.json({
-      page,
-      limit,
-      totalPages: posts.totalPages,
-      totalCount: posts.totalCount,
-      data: posts.posts,
-    });
+    res.json(magazinePosts);
   } catch (error) {
     next(error);
   }
 }
+
 // 특정 매거진 포스트 가져오기 컨트롤러
 async function getMagazinePostById(req, res, next) {
   const postId = req.params.id; // 요청에서 postId 파라미터 추출
@@ -96,6 +88,35 @@ async function getMagazinePostById(req, res, next) {
     next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
+
+//유저아이디로 매거진포스트 가져오기
+async function getUserMagazinePostsController(req, res, next) {
+  try {
+    let userId = req.query.userId; // userId를 쿼리스트링에서 가져옵니다.
+    let page = req.query.page ? parseInt(req.query.page) : 1; // 페이지 번호를 가져오고 기본값으로 1 설정
+    let limit = req.query.limit ? parseInt(req.query.limit) : 10; // 페이지 크기를 가져오고 기본값으로 10 설정
+    let searchQuery = req.query.q || null;
+
+    const posts = await magazineService.getUserMagazinePosts(
+      userId,
+      searchQuery,
+      page,
+      limit
+    );
+
+    // 페이지 정보를 추가하여 응답
+    res.json({
+      page,
+      limit,
+      totalPages: posts.totalPages,
+      totalCount: posts.totalCount,
+      data: posts.posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // 매거진 포스트 업데이트 컨트롤러
 async function updateMagazinePost(req, res, next) {
   try {
@@ -216,6 +237,7 @@ module.exports = {
   createMagazinePost,
   getAllMagazinePostsController,
   getMagazinePostById,
+  getUserMagazinePostsController,
   updateMagazinePost,
   deleteMagazinePost,
   deleteMagazinePosts,

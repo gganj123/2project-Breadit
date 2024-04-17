@@ -14,6 +14,9 @@ router.get("/:id", postController.getPostById);
 // GET 요청: 모든 포스트 가져오기 (부분 검색 포함)
 router.get("/:searchQuery", postController.getAllPosts);
 
+// GET 요청: 유저 아이디로 포스트 조회하기
+router.get("/user/:user_id", postController.getUserPostsController);
+
 // PUT 요청: 포스트 업데이트
 router.put("/:id", postController.updatePost);
 

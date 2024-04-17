@@ -79,6 +79,33 @@ async function getPostById(req, res, next) {
   }
 }
 
+async function getUserPostsController(req, res, next) {
+  try {
+    let userId = req.query.userId; // userId를 쿼리스트링에서 가져옵니다.
+    let page = req.query.page ? parseInt(req.query.page) : 1; // 페이지 번호를 가져오고 기본값으로 1 설정
+    let limit = req.query.limit ? parseInt(req.query.limit) : 10; // 페이지 크기를 가져오고 기본값으로 10 설정
+    let searchQuery = req.query.q || null;
+
+    const posts = await postService.getUserPosts(
+      userId,
+      searchQuery,
+      page,
+      limit
+    );
+
+    // 페이지 정보를 추가하여 응답
+    res.json({
+      page,
+      limit,
+      totalPages: posts.totalPages,
+      totalCount: posts.totalCount,
+      data: posts.posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // 포스트 업데이트 컨트롤러
 async function updatePost(req, res, next) {
   try {
@@ -192,6 +219,7 @@ module.exports = {
   createPost,
   getAllPosts,
   getPostById,
+  getUserPostsController,
   updatePost,
   deletePost,
   deletePosts,

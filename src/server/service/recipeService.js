@@ -80,6 +80,48 @@ async function getRecipeById(postId) {
   }
 }
 
+async function getUserRecipes(userId, searchQuery, page, limit) {
+  try {
+    let query = { userId };
+
+    if (searchQuery) {
+      const regex = new RegExp(searchQuery, "i");
+
+      query.$and = [
+        {
+          $or: [
+            { title: { $regex: regex } },
+            { content: { $regex: regex } },
+            { nickname: { $regex: regex } },
+          ],
+        },
+        { userId },
+      ];
+    }
+
+    const totalCount = await Recipe.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const recipes = await Recipe.find(query)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    if (!recipes || recipes.length === 0) {
+      const error = new Error("레시피를 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    return {
+      totalCount,
+      totalPages,
+      recipes,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
 // 레시피 업데이트 서비스
 async function updateRecipe(recipeId, newData) {
   const updatedRecipe = await Recipe.findByIdAndUpdate(recipeId, newData, {
@@ -245,6 +287,7 @@ module.exports = {
   createRecipe,
   getAllRecipes,
   getRecipeById,
+  getUserRecipes,
   updateRecipe,
   deleteRecipe,
   deleteRecipes,
