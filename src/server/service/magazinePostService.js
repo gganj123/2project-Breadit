@@ -14,8 +14,8 @@ async function createMagazinePost(postData) {
   return newPost;
 }
 
-// 모든 매거진 포스트 가져오기
-async function getAllMagazinePosts(searchQuery, limit) {
+//모든 매거진 포스트 가져오기
+async function getAllMagazinePosts(searchQuery, page, limit) {
   try {
     let query = {};
 
@@ -31,13 +31,24 @@ async function getAllMagazinePosts(searchQuery, limit) {
       };
     }
 
-    const posts = await MagazinePost.find(query).limit(limit);
+    const totalCount = await MagazinePost.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const posts = await MagazinePost.find(query)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
     if (!posts || posts.length === 0) {
       const error = new Error("매거진 글을 찾을 수 없습니다.");
       error.status = 404;
       throw error;
     }
-    return posts;
+
+    return {
+      totalCount,
+      totalPages,
+      posts,
+    };
   } catch (error) {
     throw error;
   }

@@ -33,8 +33,19 @@ async function deleteBookmark(req, res, next) {
   }
 }
 
+// 특정 사용자의 북마크에 연결된 모든 magazinePost를 가져오는 컨트롤러
+async function getAllPostsFromBookmarksController(req, res, next) {
+  try {
+    const { user_id } = req.params;
+    const allPosts = await bookmarkService.getAllPostsFromBookmarks(user_id);
+    res.json(allPosts);
+  } catch (error) {
+    next(error);
+  }
+}
 module.exports = {
   createBookmark,
   getAllBookmarks,
   deleteBookmark,
+  getAllPostsFromBookmarksController,
 };
