@@ -35,7 +35,8 @@ async function deleteBookmark(req, res, next) {
 
 // 특정 사용자의 북마크에 연결된 모든 magazinePost를 가져오는 컨트롤러
 async function getAllPostsFromBookmarksController(req, res) {
-  const { user_id, limit } = req.query;
+  const { user_id } = req.params; // URL 경로에서 user_id를 가져옵니다.
+  const { limit } = req.query;
 
   try {
     // getAllPostsFromBookmarks 함수를 호출하여 결과를 받아옵니다.

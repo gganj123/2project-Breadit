@@ -47,56 +47,27 @@ async function deleteBookmark(bookmarkId) {
 
 async function getAllPostsFromBookmarks(user_id, limit = null) {
   try {
-    const bookmarks = await getAllBookmarks(user_id); // 특정 사용자의 모든 북마크 가져오기
-    const postIds = bookmarks.map((bookmark) => bookmark.post_id); // 북마크들의 post_id들 추출
+    // 특정 사용자의 모든 북마크 가져오기
+    const bookmarks = await getAllBookmarks(user_id);
+    // 북마크들의 post_id들 추출
+    const postIds = bookmarks.map((bookmark) => bookmark.post_id);
 
     // 각 모델에서 데이터를 가져와서 하나의 배열에 추가
-    let allPosts = [];
-
-    const magazinePosts = await MagazinePost.find({ _id: { $in: postIds } });
-    const posts = await Post.find({ _id: { $in: postIds } });
-    const recipes = await Recipe.find({ _id: { $in: postIds } });
+    const [magazinePosts, posts, recipes] = await Promise.all([
+      MagazinePost.find({ _id: { $in: postIds } }),
+      Post.find({ _id: { $in: postIds } }),
+      Recipe.find({ _id: { $in: postIds } }),
+    ]);
 
     // 북마크 데이터의 location을 각 게시물 객체에 추가하고 allPosts 배열에 합침
-    allPosts = allPosts.concat(
-      magazinePosts.map((post) => {
-        const bookmark = bookmarks.find(
-          (bookmark) => String(bookmark.post_id) === String(post._id)
-        );
-        return bookmark
-          ? { ...post.toObject(), location: bookmark.location }
-          : post.toObject();
-      })
-    );
-
-    allPosts = allPosts.concat(
-      posts.map((post) => {
-        const bookmark = bookmarks.find(
-          (bookmark) => String(bookmark.post_id) === String(post._id)
-        );
-        return bookmark
-          ? { ...post.toObject(), location: bookmark.location }
-          : post.toObject();
-      })
-    );
-
-    allPosts = allPosts.concat(
-      recipes.map((post) => {
-        const bookmark = bookmarks.find(
-          (bookmark) => String(bookmark.post_id) === String(post._id)
-        );
-        return bookmark
-          ? { ...post.toObject(), location: bookmark.location }
-          : post.toObject();
-      })
-    );
+    const allPosts = [
+      ...magazinePosts.map((post) => addBookmarkLocation(post, bookmarks)),
+      ...posts.map((post) => addBookmarkLocation(post, bookmarks)),
+      ...recipes.map((post) => addBookmarkLocation(post, bookmarks)),
+    ];
 
     // 결과 배열을 limit에 맞게 잘라냄
-    if (limit !== null) {
-      allPosts = allPosts.slice(0, limit);
-    }
-
-    return allPosts;
+    return limit !== null ? allPosts.slice(0, limit) : allPosts;
   } catch (error) {
     // 에러 핸들링
     console.error("getAllPostsFromBookmarks 함수에서 에러 발생:", error);
@@ -104,6 +75,17 @@ async function getAllPostsFromBookmarks(user_id, limit = null) {
       "북마크에 연결된 게시물을 가져오는 중에 오류가 발생했습니다."
     );
   }
+}
+
+// 게시물 객체에 북마크의 위치 정보를 추가하는 함수
+function addBookmarkLocation(post, bookmarks) {
+  const bookmark = bookmarks.find(
+    (bookmark) => String(bookmark.post_id) === String(post._id)
+  );
+  // 북마크가 있는 경우 게시물 객체에 위치 정보를 추가하고 그렇지 않은 경우 기존 게시물 객체를 반환
+  return bookmark
+    ? { ...post.toObject(), location: bookmark.location }
+    : post.toObject();
 }
 module.exports = {
   createBookmark,
