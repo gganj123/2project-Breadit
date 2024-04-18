@@ -34,13 +34,19 @@ async function deleteBookmark(req, res, next) {
 }
 
 // 특정 사용자의 북마크에 연결된 모든 magazinePost를 가져오는 컨트롤러
-async function getAllPostsFromBookmarksController(req, res, next) {
+async function getAllPostsFromBookmarksController(req, res) {
+  const { user_id, limit } = req.query;
+
   try {
-    const { user_id } = req.params;
-    const allPosts = await bookmarkService.getAllPostsFromBookmarks(user_id);
-    res.json(allPosts);
+    // getAllPostsFromBookmarks 함수를 호출하여 결과를 받아옵니다.
+    const posts = await bookmarkService.getAllPostsFromBookmarks(
+      user_id,
+      limit ? parseInt(limit) : null
+    );
+    res.json(posts); // 결과를 JSON 형태로 클라이언트에 반환합니다.
   } catch (error) {
-    next(error);
+    // 에러가 발생한 경우 클라이언트에 에러 메시지를 반환합니다.
+    res.status(500).json({ error: error.message });
   }
 }
 module.exports = {
