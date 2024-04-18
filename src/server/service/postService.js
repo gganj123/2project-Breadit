@@ -26,8 +26,8 @@ async function getAllPosts(searchQuery, limit) {
       query = {
         $or: [
           { title: { $regex: regex } },
-          { ingredients: { $regex: regex } },
-          { chef: { $regex: regex } },
+          { content: { $regex: regex } },
+          { nickname: { $regex: regex } },
         ],
       };
     }
@@ -68,6 +68,49 @@ async function getPostById(postId) {
     const beBookmark = bookmark ? true : false;
 
     return { post, beLike, beBookmark };
+  } catch (error) {
+    throw error;
+  }
+}
+
+//유저아이디로 포스트 조회
+async function getUserPosts(user_id, searchQuery, page, limit) {
+  try {
+    let query = { user_id };
+
+    if (searchQuery) {
+      const regex = new RegExp(searchQuery, "i");
+
+      query.$and = [
+        {
+          $or: [
+            { title: { $regex: regex } },
+            { content: { $regex: regex } },
+            { nickname: { $regex: regex } },
+          ],
+        },
+        { user_id },
+      ];
+    }
+
+    const totalCount = await Post.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const posts = await Post.find(query)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    if (!posts || posts.length === 0) {
+      const error = new Error("포스트를 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    return {
+      totalCount,
+      totalPages,
+      posts,
+    };
   } catch (error) {
     throw error;
   }
@@ -162,7 +205,11 @@ async function postToggleBookmark(user_id, post_id) {
     if (existingBookmark) {
       await Bookmark.findOneAndRemove({ user_id: userId, post_id: postId });
     } else {
-      await Bookmark.create({ user_id: userId, post_id: postId });
+      await Bookmark.create({
+        user_id: userId,
+        post_id: postId,
+        location: "posts",
+      });
     }
 
     const updatedPost = await Post.findById(postId);
@@ -233,6 +280,7 @@ module.exports = {
   createPost,
   getAllPosts,
   getPostById,
+  getUserPosts,
   updatePost,
   deletePost,
   deletePosts,

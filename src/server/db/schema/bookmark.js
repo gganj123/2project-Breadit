@@ -10,11 +10,15 @@ const bookmarkSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    location: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,
   }
 );
-
 module.exports = bookmarkSchema;
+
 // module.exports = mongoose.model("Bookmark", bookmarkSchema);

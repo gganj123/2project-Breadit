@@ -1,4 +1,7 @@
 const Bookmark = require("../db/repository/bookmarkRepository");
+const MagazinePost = require("../db/repository/magazinePostRepository");
+const Post = require("../db/repository/postRepository");
+const Recipe = require("../db/repository/recipeRepository");
 
 // 북마크 생성 함수
 async function createBookmark(bookmarkData) {
@@ -40,8 +43,64 @@ async function deleteBookmark(bookmarkId) {
   return deletedBookmark;
 }
 
+// 특정 사용자의 북마크로부터 해당 북마크에 연결된 모든 게시물을 가져오는 함수
+
+async function getAllPostsFromBookmarks(user_id) {
+  try {
+    const bookmarks = await getAllBookmarks(user_id); // 특정 사용자의 모든 북마크 가져오기
+    const postIds = bookmarks.map((bookmark) => bookmark.post_id); // 북마크들의 post_id들 추출
+
+    // 각 모델에서 데이터를 가져와서 하나의 배열에 추가
+    const magazinePosts = await MagazinePost.find({ _id: { $in: postIds } });
+    const posts = await Post.find({ _id: { $in: postIds } });
+    const recipes = await Recipe.find({ _id: { $in: postIds } });
+
+    // 북마크 데이터의 location을 각 게시물 객체에 추가
+    const allPosts = magazinePosts
+      .map((post) => {
+        const bookmark = bookmarks.find(
+          (bookmark) => String(bookmark.post_id) === String(post._id)
+        );
+        if (bookmark) {
+          return { ...post.toObject(), location: bookmark.location };
+        }
+        return post.toObject();
+      })
+      .concat(
+        posts.map((post) => {
+          const bookmark = bookmarks.find(
+            (bookmark) => String(bookmark.post_id) === String(post._id)
+          );
+          if (bookmark) {
+            return { ...post.toObject(), location: bookmark.location };
+          }
+          return post.toObject();
+        })
+      )
+      .concat(
+        recipes.map((post) => {
+          const bookmark = bookmarks.find(
+            (bookmark) => String(bookmark.post_id) === String(post._id)
+          );
+          if (bookmark) {
+            return { ...post.toObject(), location: bookmark.location };
+          }
+          return post.toObject();
+        })
+      );
+
+    return allPosts;
+  } catch (error) {
+    // 에러 핸들링
+    console.error("getAllPostsFromBookmarks 함수에서 에러 발생:", error);
+    throw new Error(
+      "북마크에 연결된 게시물을 가져오는 중에 오류가 발생했습니다."
+    );
+  }
+}
 module.exports = {
   createBookmark,
   getAllBookmarks,
   deleteBookmark,
+  getAllPostsFromBookmarks,
 };

@@ -14,8 +14,9 @@ async function createMagazinePost(postData) {
   return newPost;
 }
 
-// 모든 매거진 포스트 가져오기
-async function getAllMagazinePosts(searchQuery, limit) {
+//모든 매거진 포스트 가져오기
+async function getAllMagazinePosts(searchQuery, limit, sortBy) {
+  // limit와 sortBy 매개변수 추가
   try {
     let query = {};
 
@@ -25,19 +26,27 @@ async function getAllMagazinePosts(searchQuery, limit) {
       query = {
         $or: [
           { title: { $regex: regex } },
-          { content: { $regex: regex } },
-          { nickname: { $regex: regex } },
+          { ingredients: { $regex: regex } },
+          { chef: { $regex: regex } },
         ],
       };
     }
 
-    const posts = await MagazinePost.find(query).limit(limit);
-    if (!posts || posts.length === 0) {
-      const error = new Error("매거진 글을 찾을 수 없습니다.");
+    let sortOptions = {}; // 정렬 옵션을 저장할 객체를 초기화합니다.
+    if (sortBy === "like_count") {
+      sortOptions = { like_count: -1 }; // like_count가 높은 순으로 정렬합니다.
+    }
+
+    const magazinePosts = await MagazinePost.find(query)
+      .sort(sortOptions) // 정렬 옵션을 적용합니다.
+      .limit(limit); // limit 매개변수 사용
+
+    if (!magazinePosts || magazinePosts.length === 0) {
+      const error = new Error("매거진 포스트를 찾을 수 없습니다.");
       error.status = 404;
       throw error;
     }
-    return posts;
+    return magazinePosts;
   } catch (error) {
     throw error;
   }
@@ -73,6 +82,50 @@ async function getMagazinePostById(postId) {
     throw error;
   }
 }
+
+//유저 아이디로 매거진포스트 가져오기
+async function getUserMagazinePosts(user_id, searchQuery, page, limit) {
+  try {
+    let query = { user_id }; // 수정: userId -> user_id
+
+    if (searchQuery) {
+      const regex = new RegExp(searchQuery, "i");
+
+      query.$and = [
+        {
+          $or: [
+            { title: { $regex: regex } },
+            { content: { $regex: regex } },
+            { nickname: { $regex: regex } },
+          ],
+        },
+        { user_id }, // 수정: userId -> user_id
+      ];
+    }
+
+    const totalCount = await MagazinePost.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const posts = await MagazinePost.find(query)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    if (!posts || posts.length === 0) {
+      const error = new Error("매거진 글을 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    return {
+      totalCount,
+      totalPages,
+      posts,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
 // 매거진 포스트 업데이트
 async function updateMagazinePost(postId, newData) {
   const updatedPost = await MagazinePost.findByIdAndUpdate(postId, newData, {
@@ -164,7 +217,11 @@ async function magazineToggleBookmark(user_id, post_id) {
     if (existingBookmark) {
       await Bookmark.findOneAndRemove({ user_id: userId, post_id: postId });
     } else {
-      await Bookmark.create({ user_id: userId, post_id: postId });
+      await Bookmark.create({
+        user_id: userId,
+        post_id: postId,
+        location: "magazines",
+      });
     }
 
     const updatedPost = await MagazinePost.findById(postId);
@@ -234,6 +291,7 @@ module.exports = {
   createMagazinePost,
   getAllMagazinePosts,
   getMagazinePostById,
+  getUserMagazinePosts,
   updateMagazinePost,
   deleteMagazinePost,
   deleteMagazinePosts,

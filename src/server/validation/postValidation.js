@@ -7,9 +7,6 @@ module.exports = {
       user_id: Joi.string()
         .required()
         .error(() => new Error("사용자 ID는 필수입니다.")),
-      bread_id: Joi.string()
-        .required()
-        .error(() => new Error("빵집데이터 ID는 필수입니다.")),
       nickname: Joi.string()
         .min(1)
         .required()
@@ -65,9 +62,6 @@ module.exports = {
         .error(() => new Error("내용을 작성해주세요.")),
       images: Joi.string().error(
         () => new Error("이미지를 올바르게 입력해주세요.")
-      ),
-      bread_id: Joi.string().error(
-        () => new Error("빵집데이터 ID는 필수입니다.")
       ),
       instagram_info: Joi.string(),
     });

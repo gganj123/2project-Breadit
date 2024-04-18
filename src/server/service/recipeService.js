@@ -80,6 +80,49 @@ async function getRecipeById(postId) {
   }
 }
 
+//유저아이디로 레시피 조회
+async function getUserRecipes(user_id, searchQuery, page, limit) {
+  try {
+    let query = { user_id };
+
+    if (searchQuery) {
+      const regex = new RegExp(searchQuery, "i");
+
+      query.$and = [
+        {
+          $or: [
+            { title: { $regex: regex } },
+            { content: { $regex: regex } },
+            { nickname: { $regex: regex } },
+          ],
+        },
+        { user_id },
+      ];
+    }
+
+    const totalCount = await Recipe.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const recipes = await Recipe.find(query)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    if (!recipes || recipes.length === 0) {
+      const error = new Error("레시피를 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    return {
+      totalCount,
+      totalPages,
+      recipes,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
 // 레시피 업데이트 서비스
 async function updateRecipe(recipeId, newData) {
   const updatedRecipe = await Recipe.findByIdAndUpdate(recipeId, newData, {
@@ -175,7 +218,11 @@ async function recipeToggleBookmark(user_id, recipe_id) {
     if (existingBookmark) {
       await Bookmark.findOneAndRemove({ user_id: userId, post_id: recipeId });
     } else {
-      await Bookmark.create({ user_id: userId, post_id: recipeId });
+      await Bookmark.create({
+        user_id: userId,
+        post_id: recipeId,
+        location: "recipes",
+      });
     }
 
     const updatedRecipe = await Recipe.findById(recipeId);
@@ -245,6 +292,7 @@ module.exports = {
   createRecipe,
   getAllRecipes,
   getRecipeById,
+  getUserRecipes,
   updateRecipe,
   deleteRecipe,
   deleteRecipes,

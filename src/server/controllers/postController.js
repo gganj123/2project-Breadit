@@ -79,6 +79,33 @@ async function getPostById(req, res, next) {
   }
 }
 
+// 유저 아이디로 포스트 가져오기
+async function getUserPostsController(req, res, next) {
+  try {
+    const { user_id } = req.params;
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const searchQuery = req.query.q || null;
+
+    const posts = await postService.getUserPosts(
+      user_id,
+      searchQuery,
+      page,
+      limit
+    );
+
+    res.json({
+      page,
+      limit,
+      totalPages: posts.totalPages,
+      totalCount: posts.totalCount,
+      data: posts.posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // 포스트 업데이트 컨트롤러
 async function updatePost(req, res, next) {
   try {
@@ -192,6 +219,7 @@ module.exports = {
   createPost,
   getAllPosts,
   getPostById,
+  getUserPostsController,
   updatePost,
   deletePost,
   deletePosts,

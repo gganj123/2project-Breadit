@@ -92,6 +92,36 @@ async function getRecipeById(req, res, next) {
     next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
+
+//유저아이디로 레시피 가져오기
+async function getUserRecipesController(req, res, next) {
+  try {
+    const { user_id } = req.params;
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const searchQuery = req.query.q || null;
+
+    const recipes = await recipeService.getUserRecipes(
+      user_id,
+      searchQuery,
+      page,
+      limit
+    );
+
+    res.json({
+      page,
+      limit,
+      totalPages: recipes.totalPages,
+      totalCount: recipes.totalCount,
+      data: recipes.recipes,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = getUserRecipesController;
+
 // 레시피 업데이트 컨트롤러
 async function updateRecipe(req, res, next) {
   try {
@@ -210,6 +240,7 @@ module.exports = {
   createRecipe,
   getAllRecipes,
   getRecipeById,
+  getUserRecipesController,
   updateRecipe,
   deleteRecipe,
   deleteRecipes,

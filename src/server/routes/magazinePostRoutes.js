@@ -6,13 +6,16 @@ const magazineController = require("../controllers/magazinePostController");
 router.post("/", magazineController.createMagazinePost);
 
 // 모든 매거진 포스트 가져오기
-router.get("/", magazineController.getAllMagazinePosts);
+router.get("/", magazineController.getAllMagazinePostsController);
 
 // 특정 매거진 포스트 가져오기
 router.get("/:id", magazineController.getMagazinePostById);
 
 // GET 요청: 모든 매거진 가져오기 (부분 검색 포함)
-router.get("/:searchQuery", magazineController.getAllMagazinePosts);
+router.get("/:searchQuery", magazineController.getAllMagazinePostsController);
+
+//유저아이디로 매거진 가져오기
+router.get("/user/:user_id", magazineController.getUserMagazinePostsController);
 
 // 매거진 포스트 업데이트
 router.put("/:id", magazineController.updateMagazinePost);

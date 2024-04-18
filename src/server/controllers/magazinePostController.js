@@ -26,15 +26,24 @@ async function createMagazinePost(req, res, next) {
     next(error);
   }
 }
-
-async function getAllMagazinePosts(req, res, next) {
+// 모든 매거진 포스트를 가져오는 컨트롤러
+async function getAllMagazinePostsController(req, res, next) {
   try {
-    let limit = req.query.limit ? parseInt(req.query.limit) : null;
     let searchQuery = req.query.q || null;
+    let limit = req.query.limit ? parseInt(req.query.limit) : null;
+    let sortBy = req.query.sort || null;
 
-    const posts = await magazineService.getAllMagazinePosts(searchQuery, limit);
-    res.json(posts);
+    // 매거진 포스트 서비스를 통해 매거진 포스트를 가져옵니다.
+    const magazinePosts = await magazineService.getAllMagazinePosts(
+      searchQuery,
+      limit,
+      sortBy
+    );
+
+    // 클라이언트에게 매거진 포스트를 반환합니다.
+    res.json(magazinePosts);
   } catch (error) {
+    // 오류가 발생한 경우 오류를 처리합니다.
     next(error);
   }
 }
@@ -84,6 +93,34 @@ async function getMagazinePostById(req, res, next) {
     next(error); // 에러가 발생한 경우 에러 핸들러로 전달합니다.
   }
 }
+
+//유저아이디로 매거진포스트 가져오기
+async function getUserMagazinePostsController(req, res, next) {
+  try {
+    const { user_id } = req.params;
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const searchQuery = req.query.q || null;
+
+    const posts = await magazineService.getUserMagazinePosts(
+      user_id,
+      searchQuery,
+      page,
+      limit
+    );
+
+    res.json({
+      page,
+      limit,
+      totalPages: posts.totalPages,
+      totalCount: posts.totalCount,
+      data: posts.posts,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // 매거진 포스트 업데이트 컨트롤러
 async function updateMagazinePost(req, res, next) {
   try {
@@ -202,8 +239,9 @@ async function getMagazinePostWithBookmarkStatusController(req, res, next) {
 
 module.exports = {
   createMagazinePost,
-  getAllMagazinePosts,
+  getAllMagazinePostsController,
   getMagazinePostById,
+  getUserMagazinePostsController,
   updateMagazinePost,
   deleteMagazinePost,
   deleteMagazinePosts,
