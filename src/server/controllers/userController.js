@@ -17,8 +17,7 @@ const {
 // 회원가입 컨트롤러
 async function signUp(req, res, next) {
   try {
-    const { email, password, confirmPassword, nickname, profile, user_role } =
-      req.body;
+    const { email, password, nickname, profile, user_role } = req.body;
 
     // 이메일 중복 검사
     // const emailExists = await User.check_if_email_exists(email);
@@ -51,13 +50,20 @@ async function signUp(req, res, next) {
 async function sendEmailVerification(req, res) {
   const { email } = req.body;
 
-  // 이메일 중복 검사
-  const emailExists = await User.check_if_email_exists(email);
-  if (emailExists) {
-    return res.status(409).json({
-      success: false,
-      message: "이미 가입된 회원입니다.",
-    });
+  // 이메일 중복 검사 및 소셜 로그인 제공자 확인
+  const existingUser = await User.check_if_email_exists(email);
+  if (existingUser) {
+    if (existingUser.social_login_provider === "Kakao") {
+      return res.status(409).json({
+        success: false,
+        message: "소셜로그인 계정으로 이미 가입된 회원입니다.",
+      });
+    } else {
+      return res.status(409).json({
+        success: false,
+        message: "이미 가입된 회원입니다.",
+      });
+    }
   }
 
   // 인증 코드 생성
@@ -241,7 +247,7 @@ async function login(req, res, next) {
 
     // ACCESS_TOKEN_SECRET과 REFRESH_TOKEN_SECRET 환경 변수 사용
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "15m",
+      expiresIn: "30m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
@@ -401,7 +407,7 @@ async function kakaosociallogin(req, res, next) {
     console.log(`유저 있음 ${user}`);
     // JWT 토큰 생성
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "15m",
+      expiresIn: "30m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
@@ -447,7 +453,7 @@ async function refreshToken(req, res) {
 
     // 새 액세스 토큰 발급
     const accessToken = jwt.sign({ userId: userId }, accessTokenSecret, {
-      expiresIn: "15m", // 액세스 토큰 만료 시간
+      expiresIn: "30m",
     });
 
     // 갱신된 액세스 토큰과 사용자 ID를 응답으로 보냅니다.

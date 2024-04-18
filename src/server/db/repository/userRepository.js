@@ -28,8 +28,10 @@ async function findByEmail(email) {
 
 // 이메일 중복 확인 메서드
 async function check_if_email_exists(email) {
-  const user = await model.user.findOne({ email });
-  return !!user; // 이메일이 존재하면 true, 아니면 false 반환
+  const user = await model.user
+    .findOne({ email })
+    .select("email social_login_provider");
+  return user || false; // 이메일이 존재하면 user 객체를, 아니면 false를 반환
 }
 
 // 회원 전체 조회 메서드

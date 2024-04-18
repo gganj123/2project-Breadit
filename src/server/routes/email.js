@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
     transporter.sendMail({
       from: process.env.NAVER_USER,
       to: emailValue,
-      subject: "[YourSubject] 인증코드 안내",
+      subject: "[브레딧 가입] 인증코드 안내",
       html: `<html><body><div><p>인증 코드: ${random_code}</p></div></body></html>`,
     });
 
