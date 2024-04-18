@@ -112,4 +112,5 @@ module.exports = {
   updateUserInfo,
   deleteUser,
   getAllUsers,
+  sendVerificationEmail,
 };
