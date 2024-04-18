@@ -45,49 +45,56 @@ async function deleteBookmark(bookmarkId) {
 
 // 특정 사용자의 북마크로부터 해당 북마크에 연결된 모든 게시물을 가져오는 함수
 
-async function getAllPostsFromBookmarks(user_id) {
+async function getAllPostsFromBookmarks(user_id, limit = null) {
   try {
     const bookmarks = await getAllBookmarks(user_id); // 특정 사용자의 모든 북마크 가져오기
     const postIds = bookmarks.map((bookmark) => bookmark.post_id); // 북마크들의 post_id들 추출
 
     // 각 모델에서 데이터를 가져와서 하나의 배열에 추가
+    let allPosts = [];
+
     const magazinePosts = await MagazinePost.find({ _id: { $in: postIds } });
     const posts = await Post.find({ _id: { $in: postIds } });
     const recipes = await Recipe.find({ _id: { $in: postIds } });
 
-    // 북마크 데이터의 location을 각 게시물 객체에 추가
-    const allPosts = magazinePosts
-      .map((post) => {
+    // 북마크 데이터의 location을 각 게시물 객체에 추가하고 allPosts 배열에 합침
+    allPosts = allPosts.concat(
+      magazinePosts.map((post) => {
         const bookmark = bookmarks.find(
           (bookmark) => String(bookmark.post_id) === String(post._id)
         );
-        if (bookmark) {
-          return { ...post.toObject(), location: bookmark.location };
-        }
-        return post.toObject();
+        return bookmark
+          ? { ...post.toObject(), location: bookmark.location }
+          : post.toObject();
       })
-      .concat(
-        posts.map((post) => {
-          const bookmark = bookmarks.find(
-            (bookmark) => String(bookmark.post_id) === String(post._id)
-          );
-          if (bookmark) {
-            return { ...post.toObject(), location: bookmark.location };
-          }
-          return post.toObject();
-        })
-      )
-      .concat(
-        recipes.map((post) => {
-          const bookmark = bookmarks.find(
-            (bookmark) => String(bookmark.post_id) === String(post._id)
-          );
-          if (bookmark) {
-            return { ...post.toObject(), location: bookmark.location };
-          }
-          return post.toObject();
-        })
-      );
+    );
+
+    allPosts = allPosts.concat(
+      posts.map((post) => {
+        const bookmark = bookmarks.find(
+          (bookmark) => String(bookmark.post_id) === String(post._id)
+        );
+        return bookmark
+          ? { ...post.toObject(), location: bookmark.location }
+          : post.toObject();
+      })
+    );
+
+    allPosts = allPosts.concat(
+      recipes.map((post) => {
+        const bookmark = bookmarks.find(
+          (bookmark) => String(bookmark.post_id) === String(post._id)
+        );
+        return bookmark
+          ? { ...post.toObject(), location: bookmark.location }
+          : post.toObject();
+      })
+    );
+
+    // 결과 배열을 limit에 맞게 잘라냄
+    if (limit !== null) {
+      allPosts = allPosts.slice(0, limit);
+    }
 
     return allPosts;
   } catch (error) {

@@ -120,8 +120,6 @@ async function getUserRecipesController(req, res, next) {
   }
 }
 
-module.exports = getUserRecipesController;
-
 // 레시피 업데이트 컨트롤러
 async function updateRecipe(req, res, next) {
   try {

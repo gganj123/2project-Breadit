@@ -25,8 +25,8 @@ async function getAllRecipes(searchQuery, limit, sortBy) {
       query = {
         $or: [
           { title: { $regex: regex } },
-          { ingredients: { $regex: regex } },
-          { chef: { $regex: regex } },
+          { content: { $regex: regex } },
+          { nickname: { $regex: regex } },
         ],
       };
     }
