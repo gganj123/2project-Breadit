@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
   },
   profile: {
     type: String,
-    required: false, // 프로필 이미지는 필수가 아님
+    required: false,
   },
   user_role: {
     type: String,

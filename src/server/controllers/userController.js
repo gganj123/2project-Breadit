@@ -19,7 +19,7 @@ async function signUp(req, res, next) {
   try {
     const { email, password, nickname, profile, user_role } = req.body;
 
-    // 이메일 중복 검사
+    // 이메일 중복 검사 ( 인증번호 발송으로 이동 )
     // const emailExists = await User.check_if_email_exists(email);
     // if (emailExists) {
     //   return res.status(409).json({
@@ -31,10 +31,10 @@ async function signUp(req, res, next) {
     // 유저 생성
     const newUser = await User.create({
       email,
-      password, // 비밀번호는 해싱 처리하는 것으로 가정
+      password,
       nickname,
       profile,
-      user_role, // user_role 추가
+      user_role,
     });
     return res.status(201).json({
       success: true,
@@ -68,13 +68,13 @@ async function sendEmailVerification(req, res) {
 
   // 인증 코드 생성
   const verificationCode = Math.floor(100000 + Math.random() * 900000);
-  const expirationTime = 3; // 유효 시간 (분)
+  const expirationTime = 3; // 인증 유효 시간 3분
 
   // 종료 시점 계산
   const currentTime = new Date();
   const expirationDate = new Date(
     currentTime.getTime() + expirationTime * 60000
-  ); // 종료 시점
+  );
 
   // 이메일 전송
   try {
@@ -85,16 +85,15 @@ async function sendEmailVerification(req, res) {
       html: `<p>귀하의 인증 코드는 ${verificationCode}입니다. 이 코드는 ${expirationTime}분 동안 유효합니다.</p>`,
     });
 
-    // 인증 코드와 유효 시간, 종료 시점을 응답으로 보냄
+    // 인증 코드와 유효 시간, 종료 시점을 응답으로 내보냄
     res.status(200).json({
       success: true,
       message: "인증 코드가 이메일로 전송되었습니다.",
-      verificationCode, // 실제로는 코드를 클라이언트에게 보내지 않습니다. 예시를 위해 포함했습니다.
-      expires_in: expirationTime, // 이 값은 클라이언트에서 기대하는 유효 시간입니다.
-      expirationTimestamp: expirationDate.toISOString(), // ISO 형식의 종료 시점
+      verificationCode,
+      expires_in: expirationTime,
+      expirationTimestamp: expirationDate.toISOString(),
     });
   } catch (error) {
-    console.error("Email sending failed:", error);
     res.status(500).json({
       success: false,
       message: "이메일 전송에 실패했습니다.",
@@ -107,21 +106,17 @@ async function sendEmailVerification(req, res) {
 async function getUserById(req, res, next) {
   try {
     const userId = req.params.userId;
-    console.log(`지정 유저 아이디: ${userId}, 타입: ${typeof userId}`);
 
-    // 토큰에서 사용자 ID를 디코딩합니다.
-    const token = req.headers.authorization?.split(" ")[1]; // Bearer 토큰을 가정합니다.
+    // 토큰에서 사용자 ID를 디코딩
+    const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       return res.status(401).json({ message: "토큰이 제공되지 않았습니다." });
     }
 
     const decoded = jwt.verify(token, accessTokenSecret);
-    const requestingUserId = decoded.userId; // 디코딩된 사용자 ID
-    console.log(
-      `요청된 유저 아이디: ${requestingUserId}, 타입: ${typeof requestingUserId}`
-    );
+    const requestingUserId = decoded.userId;
 
-    // 여기에서는 디코딩된 사용자 ID와 요청의 사용자 ID를 비교합니다.
+    // 디코딩된 사용자 id값과 저장된 id값 비교
     if (requestingUserId !== userId) {
       return res.status(403).json({
         message: "접근 권한이 없습니다. 자신의 정보만 조회할 수 있습니다.",
@@ -138,7 +133,6 @@ async function getUserById(req, res, next) {
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
     }
-    console.log(`Error retrieving user: ${error.message}`);
     next(error);
   }
 }
@@ -175,8 +169,6 @@ async function updateUserInfo(req, res, next) {
     }
 
     if (newPassword && newPassword.trim()) {
-      // const salt = await bcrypt.genSalt(10);
-      // const hashedNewPassword = await bcrypt.hash(newPassword, salt);
       user.password = newPassword;
     }
 
@@ -220,7 +212,6 @@ async function deleteUser(req, res, next) {
       });
     }
 
-    // 회원 탈퇴 성공 시 응답
     res.status(200).json({
       success: true,
       message: "회원 탈퇴가 성공적으로 완료되었습니다.",
@@ -245,15 +236,13 @@ async function login(req, res, next) {
       return res.status(401).json({ message: "유효하지 않은 접근입니다." });
     }
 
-    // ACCESS_TOKEN_SECRET과 REFRESH_TOKEN_SECRET 환경 변수 사용
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "30m",
+      expiresIn: "60m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
     });
 
-    // 디코드된 액세스 토큰을 반환하여 클라이언트에서 사용할 수 있도록 함
     const decodedAccessToken = jwt.verify(accessToken, accessTokenSecret);
 
     return res.status(200).json({
@@ -263,7 +252,6 @@ async function login(req, res, next) {
       decodedAccessToken,
     });
   } catch (error) {
-    console.error(`로그인 오류: ${error}`); // 오류 로그를 한국어로 추가
     return next(error);
   }
 }
@@ -299,12 +287,18 @@ async function verifyPassword(req, res, next) {
       message: "비밀번호 검증 성공",
     });
   } catch (error) {
-    console.error("Error verifying password: ", error);
     res.status(500).json({ message: error.message });
   }
 }
 
-// 카카오 로그인
+// 로그아웃 컨트롤러
+async function logout(req, res) {
+  return res
+    .status(200)
+    .json({ message: "로그아웃 되었습니다. 클라이언트에서 토큰 삭제 필요." });
+}
+
+// 카카오 로그인_01
 async function kakaoLogin(req, res) {
   try {
     const {
@@ -332,28 +326,16 @@ async function kakaoLogin(req, res) {
     res.status(200).json({
       /* 응답 데이터 */
     });
-    console.log("카카오 로그인 성공");
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
-// 로그아웃 컨트롤러
-async function logout(req, res) {
-  return res
-    .status(200)
-    .json({ message: "로그아웃 되었습니다. 클라이언트에서 토큰 삭제 필요." });
-}
-
-// !!!!!!!!!!!!!!카카오로그인!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// 카카오 로그인_02
 async function kakaosociallogin(req, res, next) {
   const { code } = req.body;
-  console.log("받은 인가 코드:", code);
-  console.log("전체 요청 본문:", req.body);
 
   if (!code) {
-    console.error("인가 코드가 요청에 포함되어 있지 않습니다.");
     return res.status(400).json({
       success: false,
       message: "인가 코드가 필요합니다.",
@@ -374,7 +356,6 @@ async function kakaosociallogin(req, res, next) {
     });
 
     const { access_token } = kakaoResponse.data;
-    console.log("카카오 액세스 토큰:", access_token);
 
     // 카카오 사용자 정보 요청
     const userInfoResponse = await axios.get(
@@ -385,7 +366,6 @@ async function kakaosociallogin(req, res, next) {
     );
 
     const userInfo = userInfoResponse.data;
-    console.log("카카오 사용자 정보:", userInfo);
 
     // 데이터베이스에서 사용자 조회 또는 생성
     let user = await model.user.findOne({
@@ -394,7 +374,6 @@ async function kakaosociallogin(req, res, next) {
     });
 
     if (!user) {
-      console.log("유저 등록 되어 있지 않음, 생성 시작");
       user = await model.user.create({
         email: userInfo.kakao_account.email,
         nickname: userInfo.kakao_account.profile.nickname,
@@ -402,12 +381,10 @@ async function kakaosociallogin(req, res, next) {
         social_login_provider: "Kakao",
         content_type: "Kakao",
       });
-      console.log(`유저 없음 회원 등록 성공 ${user}`);
     }
-    console.log(`유저 있음 ${user}`);
     // JWT 토큰 생성
     const accessToken = jwt.sign({ userId: user._id }, accessTokenSecret, {
-      expiresIn: "30m",
+      expiresIn: "60m",
     });
     const refreshToken = jwt.sign({ userId: user._id }, refreshTokenSecret, {
       expiresIn: "7d",
@@ -425,7 +402,6 @@ async function kakaosociallogin(req, res, next) {
       },
     });
   } catch (error) {
-    console.error("카카오 로그인 과정에서 오류 발생:", error);
     res.status(500).json({
       success: false,
       message: "로그인 실패",
@@ -438,7 +414,6 @@ async function kakaosociallogin(req, res, next) {
 async function refreshToken(req, res) {
   const { refreshToken } = req.body;
   if (!refreshToken) {
-    console.error("Refresh Token not provided");
     return res.status(401).json({ message: "Refresh Token is required" });
   }
 
@@ -448,12 +423,11 @@ async function refreshToken(req, res) {
     if (!decoded) {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
-
-    const userId = decoded.userId; // 토큰에서 사용자 ID 추출
+    const userId = decoded.userId;
 
     // 새 액세스 토큰 발급
     const accessToken = jwt.sign({ userId: userId }, accessTokenSecret, {
-      expiresIn: "30m",
+      expiresIn: "60m",
     });
 
     // 갱신된 액세스 토큰과 사용자 ID를 응답으로 보냅니다.
@@ -462,7 +436,6 @@ async function refreshToken(req, res) {
       userId,
     });
   } catch (error) {
-    console.error(`Token validation failed: ${error.message}`);
     return res.status(403).json({ message: "Invalid token" });
   }
 }
@@ -478,6 +451,6 @@ module.exports = {
   getUserById,
   verifyPassword,
   kakaoLogin,
-  refreshToken,
   kakaosociallogin,
+  refreshToken,
 };

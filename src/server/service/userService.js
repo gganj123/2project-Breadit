@@ -22,7 +22,6 @@ async function getAllUsers() {
     const users = await UserModel.find();
     return users;
   } catch (error) {
-    console.error("Error retrieving all users:", error);
     throw new Error("전체 사용자 정보 조회중 오류가 발생했습니다.");
   }
 }
@@ -36,7 +35,6 @@ async function getUserById(userId, requestingUserId) {
       throw new Error("해당 사용자를 찾을 수 없습니다.");
     }
 
-    // userId와 requestingUserId가 모두 문자열이 아닌 ObjectId 타입일 수 있으므로, equals 메소드를 사용해 비교
     if (!user._id.equals(userId)) {
       throw new Error("권한이 없습니다. 자신의 정보만 조회할 수 있습니다.");
     }

@@ -41,7 +41,6 @@ async function find() {
     const users = await model.user.find();
     return users;
   } catch (error) {
-    console.error("사용자 전체 조회 중 오류:", error);
     throw new Error("사용자 전체 조회 중 오류가 발생했습니다.");
   }
 }
@@ -52,7 +51,6 @@ async function create(userData) {
     const newUser = await model.user.create(userData);
     return newUser;
   } catch (error) {
-    console.error("회원가입 중 오류:", error);
     throw new Error("회원가입 중 오류가 발생했습니다.");
   }
 }
@@ -65,7 +63,6 @@ async function findByIdAndUpdate(userId, newUserData, options = {}) {
       new: true,
     });
   } catch (error) {
-    console.error("회원 정보 수정 중 오류:", error);
     throw new Error("회원 정보 수정 중 오류가 발생했습니다.");
   }
 }
@@ -84,23 +81,23 @@ async function findByIdAndDelete(userId) {
   return deletedUser;
 }
 
-//회원 정보 조회 메서드
+// 회원 정보 조회 메서드
 async function findById(userId) {
   try {
     const user = await model.user.findById(userId);
     if (!user) {
       // 특정 사용자를 찾을 수 없는 경우
       let error = new Error("해당 사용자를 찾을 수 없습니다.");
-      error.status = 404; // Not Found
+      error.status = 404;
       throw error;
     }
     return user;
   } catch (error) {
-    console.error("사용자 정보 조회 중 오류:", error);
-    error.status = 500; // Internal Server Error
+    error.status = 500;
     throw error;
   }
 }
+
 // userId로 유저 조회 및 필요한 데이터 반환하는 함수
 async function getUserProfileAndNickname(userId) {
   try {
@@ -127,8 +124,6 @@ async function findOrCreateKakaoUser(kakaoData) {
       "카카오 계정에서 이메일 정보를 찾을 수 없습니다. 이메일 제공에 동의해주세요."
     );
   }
-
-  console.log(`Email from Kakao: ${email}`); // 이메일 로깅 추가
 
   const user = await model.user.findOne({
     social_login_id: id,
@@ -158,9 +153,7 @@ module.exports = {
   check_password,
   check_if_email_exists,
   findByEmail,
-  // join,
   update_user,
-  // delete_user,
   getUserProfileAndNickname,
   findOrCreateKakaoUser,
   find,
