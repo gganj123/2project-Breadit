@@ -48,7 +48,7 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
 <br/>
 
 ## 🍞 프로젝트 소개
-![브레딧딧](/uploads/09613b806fdc11e10a998bd3299b92a3/xxx.png)
+![브레딧](/uploads/09613b806fdc11e10a998bd3299b92a3/xxx.png)
 
 <h3>사용자 관련 기능</h3>
 
