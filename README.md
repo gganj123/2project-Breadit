@@ -48,7 +48,7 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
 <br/>
 
 ## 🍞 프로젝트 소개
-![브레딧](/uploads/09613b806fdc11e10a998bd3299b92a3/xxx.png)
+![xxx](/uploads/46ec8f594475d9165eb5b5d00739b406/xxx.png)
 
 <h3>사용자 관련 기능</h3>
 
@@ -84,8 +84,8 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
     - 관리자 계정이 존재하며, 사용자 계정과 구분된다.
 
 <h3>지도 관련 기능</h3>
-![지도](/uploads/cd01d9771461d6494c262f3629fb5830/지도.JPG)
-![지도2](/uploads/417757ebf56c0e95dfeb2ebedc04799a/지도2.JPG)
+![지도](/uploads/18e08136eee5fc98533391ca5fe853ee/지도.JPG)
+![지도2](/uploads/7d0c6a8436d9d5ba20be63b2baeca079/지도2.JPG)
 
 
 1. 현재 위치 조회
@@ -113,7 +113,7 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
     <br/>
 
 <h3>커뮤니티 관련 기능</h3>
-![커뮤니티](/uploads/0191b0ec4f95e0487aefd6268cfc1498/커뮤니티.JPG)
+![커뮤니티](/uploads/4b3ba2eb16c00ba089b0a25be5621a65/커뮤니티.JPG)
 
 1. 게시글 작성
     - 게시글 작성 기능은 로그인한 유저와 관리자만 이용할 수 있다.
@@ -146,8 +146,8 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
     <br/>
 
 <h3>매거진 관련 기능</h3>
-![매거진](/uploads/cc373ed35413c34ba33e22f2e4c2f4d2/매거진.JPG)
-![매거진상세](/uploads/f612ed3fcf9b60d8a88ff446d62cdfa4/매거진상세.JPG)
+![매거진](/uploads/291e51367e55511314f95c4d61c0e2bd/매거진.JPG)
+![매거진상세](/uploads/0c8395ffa613c06492845b83622966e7/매거진상세.JPG)
 
 1. 매거진 작성
     - 매거진 작성은 관리자만 가능하다. 일반 유저/비회원은은 매거진을 작성할 수 없으며, 오직 조회만 가능하다.
