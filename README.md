@@ -8,6 +8,8 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
 
 **배포 링크 : [Breadit](https://frontend-nine-tau-41.vercel.app/)**
 
+<br/>
+
 **테스트 계정**
 | 이메일 | 비밀번호 |
 | ------ | ------ |
