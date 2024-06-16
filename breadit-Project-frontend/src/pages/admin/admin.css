@@ -1,0 +1,109 @@
+.admin_category {
+  width: 20%;
+  height: 100%;
+  padding: 6rem 5rem;
+  position: absolute;
+  top: 7.4rem;
+  left: 0;
+}
+
+.admin_category h3 {
+  font-size: 2.2rem;
+  color: #575757;
+}
+
+.admin_area {
+  margin-left: 20%;
+  background-color: #fff;
+  min-height: 92vh;
+}
+
+.admin_cont {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 6rem 0 0;
+}
+
+.admin_guide {
+  background-color: #f7f7f7;
+  padding: 3rem 4rem;
+}
+
+.admin_guide h4 {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+}
+
+.admin_guide li {
+  font-size: 1.6rem;
+  color: #575757;
+  padding-left: 1.6rem;
+  position: relative;
+  line-height: 1.6;
+}
+
+.admin_guide li::before {
+  content: '';
+  width: 0.6rem;
+  height: 0.6rem;
+  background-color: #575757;
+  border-radius: 50%;
+  position: absolute;
+  top: 1rem;
+  left: 0;
+}
+
+.admin_cont .main_title {
+  margin-top: 6rem;
+}
+
+.admin_cont .main_title h4 {
+  font-size: 2.4rem;
+  color: #333;
+}
+
+.admin_table table {
+  border-top: solid 1px #222;
+  width: 100%;
+  text-align: center;
+}
+
+.admin_table tr {
+  border-bottom: solid 1px #dbdbdb;
+}
+
+.admin_table th {
+  font-size: 1.8rem;
+  line-height: 6.6rem;
+}
+
+.admin_table td {
+  font-size: 1.6rem;
+  line-height: 6.6rem;
+}
+
+.admin_table .check_area {
+  width: 10rem;
+}
+
+.admin_table .nickname {
+  width: 24rem;
+}
+
+.admin_table .setting {
+  width: 20rem;
+}
+
+.admin_table .checkbox {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: sub;
+  margin-right: 0.8rem;
+}
+
+.admin_magazine_list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
+}

@@ -1,0 +1,35 @@
+.main_title {
+  margin-bottom: 3rem;
+}
+
+.main_title .eng_title {
+  font-size: 3rem;
+}
+
+.main_title_text {
+  font-size: 2.8rem;
+  font-weight: 600;
+}
+
+.categories_roof {
+  background-color: #59a47e;
+}
+
+.categories_roof p {
+  font-size: 1.6rem;
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 1px;
+  line-height: 8rem;
+}
+
+.info_roof {
+  display: flex;
+  gap: 4rem;
+  padding: 4rem 0;
+}
+
+.info_roof span {
+  font-size: 8rem;
+  color: #59a47e;
+}

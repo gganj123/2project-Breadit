@@ -1,0 +1,208 @@
+.main_cont.magazine {
+  padding: 12rem 5vw;
+}
+
+.magazine_banner .banner_item {
+  position: relative;
+  height: 63rem;
+  background-color: #ddd;
+}
+
+.magazine_banner .banner_item::before {
+  content: '';
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.15);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.magazine_banner .banner_item .banner_img {
+  width: 100%;
+}
+
+.magazine_banner .content_box {
+  position: absolute;
+  bottom: 9rem;
+  left: 0;
+  width: 100%;
+  padding: 0 6rem;
+  color: #eee;
+}
+
+.magazine_banner .content_box .font_oleo {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.magazine_banner .content_box h3 {
+  font-size: 3.2rem;
+  margin: 2.4rem 0 1.6rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  line-height: 1.4;
+}
+
+.magazine_banner .content_box h3 a {
+  color: #fff;
+}
+
+.magazine_banner .content_box .content {
+  font-size: 2rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  height: 6rem;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.magazine_banner .content_box .content * {
+  line-height: 1.5;
+}
+
+.magazine_banner .slick-arrow {
+  z-index: 99;
+  width: 6rem;
+  height: 6rem;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.magazine_banner .slick-arrow::before {
+  content: '';
+  width: 1.6rem;
+  height: 1.6rem;
+  border: solid 2px #fff;
+  text-indent: -9999px;
+  position: absolute;
+  top: 34%;
+  left: 30%;
+  transform: rotate(45deg);
+}
+
+.magazine_banner .slick-prev {
+  left: 0;
+}
+
+.magazine_banner .slick-prev::before {
+  border-top: 0;
+  border-right: 0;
+  left: 38%;
+}
+
+.magazine_banner .slick-next {
+  right: 0;
+}
+
+.magazine_banner .slick-next::before {
+  border-left: 0;
+  border-bottom: 0;
+  left: 30%;
+}
+
+.magazine_banner .slick-dots {
+  width: auto;
+  bottom: 3rem;
+  right: 6rem;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  padding: 0 2rem;
+}
+
+.magazine_dots li {
+  width: auto;
+  height: 3.4rem;
+  line-height: 3.2rem;
+  display: none;
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.magazine_dots li.slick-active {
+  display: block;
+}
+
+.magazine_card_list {
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.magazine .main_title {
+  margin-bottom: 4rem;
+}
+
+.magazine_card_list .no_post {
+  text-align: center;
+  line-height: 20rem;
+  grid-column: 5/1;
+  color: #888;
+}
+
+.detail {
+  max-width: 129rem;
+  margin: 10rem auto;
+  padding: 0 2rem;
+}
+
+.detail_top {
+  margin-bottom: 4rem;
+}
+
+.detail_top .location {
+  display: flex;
+  gap: 3.4rem;
+}
+
+.detail_top .location li + li {
+  position: relative;
+}
+
+.detail_top .location li + li::before {
+  content: '';
+  width: 0.8rem;
+  height: 0.8rem;
+  border-top: solid 1px #666;
+  border-right: solid 1px #666;
+  transform: rotate(45deg);
+  position: absolute;
+  top: 4px;
+  right: calc(100% + 1.6rem);
+}
+
+.detail_title {
+  font-size: 3rem;
+  margin-bottom: 1.4rem;
+  max-width: 80rem;
+}
+
+.detail_location {
+  margin-bottom: 4rem;
+}
+
+.detail_location ul {
+  display: flex;
+  gap: 3rem;
+}
+
+.detail_btns {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.magazine.detail h2 {
+  font-size: 3rem;
+  margin-bottom: 3rem;
+}
+
+.detail_loading_wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 90vh;
+}
