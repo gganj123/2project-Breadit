@@ -69,6 +69,7 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
 <br/>
 
 <h3>사용자 관련 기능</h3>
+
 ![image](https://github.com/gganj123/2project-Breadit/assets/48715999/1d8c8e95-a826-4515-9a86-d6afb7915027)
 
 
@@ -106,7 +107,9 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
     - 관리자 계정이 존재하며, 사용자 계정과 구분된다.
 
 <h3>지도 관련 기능</h3>
+
 ![image](https://github.com/gganj123/2project-Breadit/assets/48715999/bbc3fbef-1307-420d-9ab8-0d98326ba4c3)
+
 ![image](https://github.com/gganj123/2project-Breadit/assets/48715999/5c310249-cb79-412a-9594-582f98250279)
 
 
@@ -135,6 +138,7 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
     <br/>
 
 <h3>커뮤니티 관련 기능</h3>
+
 ![image](https://github.com/gganj123/2project-Breadit/assets/48715999/1dcb302e-3bce-45e5-96fa-1e8f2ea49f5d)
 
 
@@ -169,7 +173,9 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
     <br/>
 
 <h3>매거진 관련 기능</h3>
+
 ![image](https://github.com/gganj123/2project-Breadit/assets/48715999/19ae5aef-1d25-470c-8458-8abcf0809c32)
+
 ![image](https://github.com/gganj123/2project-Breadit/assets/48715999/36c4e2a2-cbf0-462c-b315-7bb287a4baed)
 
 1. 매거진 작성
