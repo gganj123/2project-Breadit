@@ -60,7 +60,8 @@ React, TypeScript 와 REST API 를 활용한 빵집 탐방 커뮤니티 프로�
 <br/>
 
 ## 프로젝트 소개
-![xxx](/uploads/46ec8f594475d9165eb5b5d00739b406/xxx.png)
+![image](https://github.com/gganj123/2project-Breadit/assets/48715999/a88984b2-8fb3-4ae5-ad45-b8d3bffff1d6)
+
 
 
 <h4>프로젝트 기간 : 2024.03.23 ~ 2024.04.19</h4>
